@@ -8,20 +8,16 @@ namespace yadd.core
     public class Job
     {
         public string Name { get; private set; }
-        public IEnumerable<JobStep> Steps { get; set; }
+        public string TextualRepresentation { get; private set; }
+        
 
         public Job(string pathToScript)
         {
             Name = Path.GetFileNameWithoutExtension(pathToScript);
-            string script = File.ReadAllText(pathToScript);
-            Steps = Parse(script);
+            TextualRepresentation = File.ReadAllText(pathToScript);
         }
 
-        public string GetTextualRepresentation()
-        {
-        }
-
-        private static IEnumerable<JobStep> Parse(string script)
+        public IEnumerable<JobStep> GetSteps()
         {
             throw new NotImplementedException();
         }

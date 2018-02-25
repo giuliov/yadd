@@ -38,7 +38,7 @@ namespace yadd.core
                     using (var transaction = connection.BeginTransaction())
                     {
                         var record = history.AddRecord(job.Name);
-                        foreach (var jobStep in job.Steps)
+                        foreach (var jobStep in job.GetSteps())
                         {
                             jobStep.Execute(transaction);
                             record.TrackSuccess(jobStep);

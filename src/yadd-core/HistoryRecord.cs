@@ -9,65 +9,65 @@ namespace yadd.core
     {
         public HistoryRecordType RecordType { get; private set; }
         public string Title { get; private set; }
-        public byte[] BaseVersion { get; private set; }
+        public HashValue BaseVersion { get; private set; }
+        public HashValue ScriptVersion { get; private set; }
         public string Username { get; private set; }
         public DateTimeOffset StartDate { get; private set; }
         public DateTimeOffset? FinishDate { get; private set; }
+        public string Description { get; internal set; }
 
-        public HistoryRecord(string jobName)
+        public HistoryRecord(Job job, HashValue baselineVersion)
         {
             RecordType = HistoryRecordType.ForwardChange;
-            Title = jobName;
-            BaseVersion = new byte[0];
-            Username = System.Threading.Thread.CurrentPrincipal.Identity.Name;
+            Title = job.Name;
+            ScriptVersion = job.GetHash();
+            BaseVersion = baselineVersion;
+            Username = Environment.UserName; // TODO consider System.Threading.Thread.CurrentPrincipal.Identity.Name;
             StartDate = DateTimeOffset.UtcNow;
+            Description = string.Empty; // TODO
         }
 
-        private string GetTextualRepresentation()
+        public string TextualRepresentation
         {
-            var sb = new StringBuilder();
-            sb.AppendFormat("[RecordType]='{0}',", RecordType);
-            sb.AppendFormat("[Title]='{0}',", Title);
-            sb.AppendFormat("[Username]='{0}',", Username);
-            sb.AppendFormat("[StartDate]='{0:o}',", StartDate);
-            sb.AppendFormat("[BaseVersion]={0},", BaseVersion.ToHexString());
-            sb.AppendFormat("[FinishDate]='{0:o}',", FinishDate);
-            sb.AppendFormat("[Description]='{0}',", string.Empty);
-            return sb.ToString();
-        }
-
-        byte[] GetHash()
-        {
-            string text = GetTextualRepresentation();
-            byte[] bytes = Encoding.UTF8.GetBytes(text);
-            using (var sha = new SHA1Managed())
+            get
             {
-                byte[] hashBytes = sha.ComputeHash(bytes);
-                return hashBytes;
+                return $@"RecordType={RecordType}
+Title={Title}
+BaseVersion={BaseVersion}
+ScriptVersion={ScriptVersion}
+Username={Username}
+StartDate={StartDate:o}
+FinishDate={FinishDate:o}
+Description={Description}
+<<<";
             }
+        }
+
+        public HashValue GetHash()
+        {
+            return new HashValue(TextualRepresentation);
         }
 
         public string GetSignature()
         {
             throw new System.NotImplementedException();
-            return null;
         }
 
         public void TrackSuccess(JobStep jobStep)
         {
-            throw new System.NotImplementedException();
+            // TODO no-op for now
         }
 
         public void Close()
         {
-            throw new System.NotImplementedException();
+            FinishDate = DateTimeOffset.UtcNow;
         }
     }
 
     public enum HistoryRecordType
     {
-        Baseline,
-        ForwardChange,
-        Rollback
+        Baseline        = 'B',
+        ForwardChange   = 'F',
+        Rollback        = 'R'
     }
 }

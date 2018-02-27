@@ -12,45 +12,54 @@ namespace yadd.core
         private readonly IEnumerable<Job> jobs;
         private readonly Logger logger;
         private readonly DatabaseFactory historyFactory;
-        private readonly DbProviderFactory targetFactory;
-        private readonly string targetConnectionString;
+        private readonly DatabaseFactory targetFactory;
 
         public Deployer(IEnumerable<Job> jobs, DatabaseFactory targetFactory, Logger logger, DatabaseFactory historyFactory)
         {
             this.jobs = jobs;
             this.logger = logger;
             this.historyFactory = historyFactory;
-            this.targetFactory = targetFactory.Factory;
-            this.targetConnectionString = targetFactory.Csb.ConnectionString;
+            this.targetFactory = targetFactory;
         }
 
         public DeployResult Deploy()
         {
-            using (var connection = targetFactory.CreateConnection())
+            using (var connection = targetFactory.Factory.CreateConnection())
             {
-                connection.ConnectionString = targetConnectionString;
+                logger.ConnectingToTargetDatabase();
+                connection.ConnectionString = targetFactory.Csb.ConnectionString;
                 connection.Open();
 
-                var history = new HistoryTable(connection);
+                logger.ExportingTargetDatabaseSchema();
+                string exportedSchemaPath = targetFactory.Exporter.ExportSchema(targetFactory.Csb);
+                var history = new HistoryTable(exportedSchemaPath);
+                var executor = new JobExecutor(connection, history);
+
+                logger.PreparingTargetDatabase();
+                executor.Setup();
 
                 foreach (var job in jobs)
                 {
                     using (var transaction = connection.BeginTransaction())
                     {
-                        var record = history.AddRecord(job.Name);
+                        logger.ApplyingScript(job);
+                        executor.StartJob(job);
                         foreach (var jobStep in job.GetSteps())
                         {
-                            jobStep.Execute(transaction);
-                            record.TrackSuccess(jobStep);
+                            executor.ExecuteStep(jobStep, transaction);
                         }
+                        executor.EndJob(job);
+                        logger.ScriptApplied(job);
 
-                        record.Close();
                         transaction.Commit();
                     }
                 }
+
+                logger.CleaningUp();
+                executor.Teardown();
             }
 
-
+            logger.AllDone();
             return new DeployResult(0, 0);
         }
     }

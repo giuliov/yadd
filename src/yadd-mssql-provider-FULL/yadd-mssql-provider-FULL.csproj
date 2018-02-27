@@ -1,0 +1,184 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2DB1C45A-B179-4FB6-A396-EA599869E2A0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>yadd_mssql_provider_FULL</RootNamespace>
+    <AssemblyName>yadd-mssql-provider-FULL</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.SqlServer.AzureStorageEnum">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.AzureStorageEnum.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.BatchParserClient">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.BatchParserClient.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.ConnectionInfo">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.ConnectionInfo.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.ConnectionInfoExtended">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.ConnectionInfoExtended.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Diagnostics.Strace">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Diagnostics.Strace.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Dmf">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Dmf.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Dmf.Common">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Dmf.Common.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Management.Collector">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Management.Collector.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Management.CollectorEnum">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Management.CollectorEnum.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Management.RegisteredServers">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Management.RegisteredServers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Management.Sdk.Sfc">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Management.Sdk.Sfc.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Management.Utility">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Management.Utility.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Management.UtilityEnum">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Management.UtilityEnum.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Management.XEvent">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Management.XEvent.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Management.XEventDbScoped">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Management.XEventDbScoped.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Management.XEventDbScopedEnum">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Management.XEventDbScopedEnum.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Management.XEventEnum">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Management.XEventEnum.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.PolicyEnum">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.PolicyEnum.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.RegSvrEnum">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.RegSvrEnum.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.ServiceBrokerEnum">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.ServiceBrokerEnum.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Smo">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Smo.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SmoExtended">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.SmoExtended.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SqlClrProvider">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.SqlClrProvider.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SqlEnum">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.SqlEnum.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SqlTDiagm">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.SqlTDiagm.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SqlWmiManagement">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.SqlWmiManagement.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.SString">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.SString.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.Types">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.Types.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.SqlServer.WmiEnum">
+      <HintPath>..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\lib\net40\Microsoft.SqlServer.WmiEnum.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Data.SqlClient, Version=4.2.0.1, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Data.SqlClient.4.4.2\lib\net461\System.Data.SqlClient.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SqlServerSchemaExporter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\yadd-core\yadd-core.csproj">
+      <Project>{dd21c09c-629f-4877-b03b-0f099f4f0911}</Project>
+      <Name>yadd-core</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\build\net40\Microsoft.SqlServer.SqlManagementObjects.targets" Condition="Exists('..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\build\net40\Microsoft.SqlServer.SqlManagementObjects.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\build\net40\Microsoft.SqlServer.SqlManagementObjects.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Microsoft.SqlServer.SqlManagementObjects.140.17224.0\build\net40\Microsoft.SqlServer.SqlManagementObjects.targets'))" />
+  </Target>
+</Project>

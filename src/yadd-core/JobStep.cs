@@ -5,10 +5,15 @@ namespace yadd.core
 {
     public class JobStep
     {
-
-        internal void Execute(DbTransaction transaction)
+        public JobStep(Job parent, int num, string command)
         {
-            throw new NotImplementedException();
+            Parent = parent;
+            Number = num;
+            this.Command = command;
         }
+
+        public Job Parent { get; private set; }
+        public int Number { get; private set; }
+        public string Command { get; private set; }
     }
 }

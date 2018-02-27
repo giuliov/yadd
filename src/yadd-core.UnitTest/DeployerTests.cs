@@ -15,12 +15,14 @@ namespace yadd_core.UnitTest
         {
             DbProviderFactory f = SqlClientFactory.Instance;
             var csb = f.CreateConnectionStringBuilder();
+            csb.ConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=FakeVotingPortalDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;";
+            var target = new DatabaseFactory(f, csb, null);
             var jobs = new Job[]
             {
-                new Job("")
+                new Job("TestScripts\\01.CreateMyTable.sql")
             };
             var logger = new ConsoleLogger();
-            var sut = new Deployer(jobs, new DatabaseFactory(f, csb), logger, null);
+            var sut = new Deployer(jobs, target, logger, null);
 
             var result = sut.Deploy();
 

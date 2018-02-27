@@ -5,13 +5,15 @@ VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "yadd-cli", "yadd-cli\yadd-cli.csproj", "{820EEBA8-F358-4197-A603-8BFB73C16CED}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "yadd-core", "yadd-core\yadd-core.csproj", "{09D8F1FF-4180-415B-A349-C2F99B64EAF6}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "yadd-core.UnitTest", "yadd-core.UnitTest\yadd-core.UnitTest.csproj", "{E665AA20-1C18-428C-930D-F397CF524767}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "yadd-mssql-provider", "yadd-mssql-provider\yadd-mssql-provider.csproj", "{B5A7945E-C923-4B48-980B-D02CCACE44DF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "yadd-mssql-provider", "yadd-mssql-provider\yadd-mssql-provider.csproj", "{B5A7945E-C923-4B48-980B-D02CCACE44DF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "yadd-mssql-provider.UnitTest", "yadd-mssql-provider.UnitTest\yadd-mssql-provider.UnitTest.csproj", "{F040F7C2-E5E9-4CC3-AB25-C62B9D2E6D58}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "yadd-mssql-provider.UnitTest", "yadd-mssql-provider.UnitTest\yadd-mssql-provider.UnitTest.csproj", "{F040F7C2-E5E9-4CC3-AB25-C62B9D2E6D58}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "yadd-mssql-provider-FULL", "yadd-mssql-provider-FULL\yadd-mssql-provider-FULL.csproj", "{2DB1C45A-B179-4FB6-A396-EA599869E2A0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "yadd-core", "yadd-core\yadd-core.csproj", "{DD21C09C-629F-4877-B03B-0F099F4F0911}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -23,10 +25,6 @@ Global
 		{820EEBA8-F358-4197-A603-8BFB73C16CED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{820EEBA8-F358-4197-A603-8BFB73C16CED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{820EEBA8-F358-4197-A603-8BFB73C16CED}.Release|Any CPU.Build.0 = Release|Any CPU
-		{09D8F1FF-4180-415B-A349-C2F99B64EAF6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{09D8F1FF-4180-415B-A349-C2F99B64EAF6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{09D8F1FF-4180-415B-A349-C2F99B64EAF6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{09D8F1FF-4180-415B-A349-C2F99B64EAF6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E665AA20-1C18-428C-930D-F397CF524767}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E665AA20-1C18-428C-930D-F397CF524767}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E665AA20-1C18-428C-930D-F397CF524767}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -39,6 +37,14 @@ Global
 		{F040F7C2-E5E9-4CC3-AB25-C62B9D2E6D58}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F040F7C2-E5E9-4CC3-AB25-C62B9D2E6D58}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F040F7C2-E5E9-4CC3-AB25-C62B9D2E6D58}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2DB1C45A-B179-4FB6-A396-EA599869E2A0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DB1C45A-B179-4FB6-A396-EA599869E2A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DB1C45A-B179-4FB6-A396-EA599869E2A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DB1C45A-B179-4FB6-A396-EA599869E2A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DD21C09C-629F-4877-B03B-0F099F4F0911}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DD21C09C-629F-4877-B03B-0F099F4F0911}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DD21C09C-629F-4877-B03B-0F099F4F0911}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DD21C09C-629F-4877-B03B-0F099F4F0911}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

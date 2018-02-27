@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\yadd-core\yadd-core.csproj" />
+    <ProjectReference Include="..\yadd-core\yadd-core_CORE.csproj" />
   </ItemGroup>
 
   <ItemGroup>

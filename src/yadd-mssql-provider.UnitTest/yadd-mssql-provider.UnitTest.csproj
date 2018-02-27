@@ -8,14 +8,15 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="140.17224.0" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.4.2" />
     <PackageReference Include="xunit" Version="2.3.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.3.1" />
     <DotNetCliToolReference Include="dotnet-xunit" Version="2.3.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\yadd-core\yadd-core.csproj" />
-    <ProjectReference Include="..\yadd-mssql-provider\yadd-mssql-provider.csproj" />
+    <ProjectReference Include="..\yadd-mssql-provider-FULL\yadd-mssql-provider-FULL.csproj" />
   </ItemGroup>
 
 </Project>

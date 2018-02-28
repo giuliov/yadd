@@ -37,12 +37,13 @@ BEGIN
         Id              INT             NOT NULL IDENTITY(1,1) PRIMARY KEY,
         RecordType      CHAR(1)         NOT NULL,
         Title           VARCHAR(140)    NOT NULL,
-        BaseVersion     BINARY(20)      NULL,
-        ScriptVersion   BINARY(20)      NOT NULL,
+        BaseVersion     BINARY(21)      NULL,
+        ScriptVersion   BINARY(21)      NOT NULL,
         Username        VARCHAR(140)    NOT NULL,
         StartDate       DATETIMEOFFSET  NOT NULL,
         FinishDate      DATETIMEOFFSET  NULL,
-        RecordHash      BINARY(20)      NULL,
+        RecordHash      BINARY(21)      NULL,
+        UserSignature   BINARY(21)      NULL,
         Description     NVARCHAR(500)   NOT NULL DEFAULT ''
     )
 END

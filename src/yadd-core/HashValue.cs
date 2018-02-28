@@ -5,11 +5,11 @@ using System.Text;
 
 namespace yadd.core
 {
-    public enum HashKind
+    public enum HashKind : byte
     {
-        Undefined = -1,
+        Undefined = 0xFF,
         Null = 0,
-        SHA1
+        SHA1 = 0xA1
     }
 
     public class HashValue
@@ -36,7 +36,8 @@ namespace yadd.core
         {
             if (Kind == HashKind.Null)
                 return string.Empty;
-            return hashBytes.ToHexString();
+            string tag = Kind.ToString("x");
+            return hashBytes.ToHexString() + tag;
         }
     }
 }

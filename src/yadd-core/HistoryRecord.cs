@@ -31,14 +31,13 @@ namespace yadd.core
         {
             get
             {
+                // WARNING: do not ever change this!
                 return $@"RecordType={RecordType}
 Title={Title}
 BaseVersion={BaseVersion}
 ScriptVersion={ScriptVersion}
 Username={Username}
 StartDate={StartDate:o}
-FinishDate={FinishDate:o}
-Description={Description}
 <<<";
             }
         }
@@ -46,11 +45,6 @@ Description={Description}
         public HashValue GetHash()
         {
             return new HashValue(TextualRepresentation);
-        }
-
-        public string GetSignature()
-        {
-            throw new System.NotImplementedException();
         }
 
         public void TrackSuccess(JobStep jobStep)

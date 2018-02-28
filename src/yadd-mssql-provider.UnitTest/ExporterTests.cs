@@ -12,7 +12,8 @@ namespace yadd_mssql_provider.UnitTest
         [Fact]
         public void Test1()
         {
-            ISchemaExporter exporter = new SqlServerSchemaExporter();
+            var logger = new ConsoleLogger();
+            ISchemaExporter exporter = new SqlServerSchemaExporter(logger);
             var csb = new SqlConnectionStringBuilder();
             csb.ConnectionString = @"Data Source=(localdb)\MSSQLLocalDB;Initial Catalog=FakeVotingPortalDB;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=True;ApplicationIntent=ReadWrite;MultiSubnetFailover=False;";
             exporter.ExportSchema(csb);

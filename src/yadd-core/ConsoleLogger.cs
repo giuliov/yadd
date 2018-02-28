@@ -10,5 +10,13 @@ namespace yadd.core
         {
             Console.WriteLine(message);
         }
+
+        public override void WriteError(string message)
+        {
+            ConsoleColor save = Console.ForegroundColor;
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine(message);
+            Console.ForegroundColor = save;
+        }
     }
 }

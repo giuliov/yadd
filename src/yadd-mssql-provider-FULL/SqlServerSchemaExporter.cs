@@ -13,7 +13,14 @@ namespace yadd.provider.mssql
 {
     public class SqlServerSchemaExporter : ISchemaExporter
     {
-        public string ExportSchema(DbConnectionStringBuilder csb)
+        private Logger logger;
+
+        public SqlServerSchemaExporter(Logger logger)
+        {
+            this.logger = logger;
+        }
+
+        public string ExportSchema(DbConnectionStringBuilder csb, string historyTableName)
         {
             string exportFile = Path.ChangeExtension(Path.GetTempFileName(), ".sql");
 
@@ -33,10 +40,21 @@ namespace yadd.provider.mssql
             transfer.CopyAllTables = true;
             transfer.CopyAllViews = true;
             transfer.Options = options;
-            //transfer.Options.TargetServerVersion = SqlServerVersion.Version90;
+            transfer.ScriptingError += Transfer_ScriptingError;
+            transfer.ScriptingProgress += Transfer_ScriptingProgress;
             StringCollection scriptBatches = transfer.ScriptTransfer();
 
             return exportFile;
+        }
+
+        private void Transfer_ScriptingError(object sender, ScriptingErrorEventArgs e)
+        {
+            logger.ErrorWhileExportingTargetDatabaseSchema(e.Current.Value, e.InnerException.Message);
+        }
+
+        private void Transfer_ScriptingProgress(object sender, ProgressReportEventArgs e)
+        {
+            logger.ExportingTargetDatabaseSchemaObject(e.Current.Value);
         }
     }
 }

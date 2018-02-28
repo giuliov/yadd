@@ -29,13 +29,15 @@ namespace yadd_cli
             var config = builder.Build();
             var appConfig = config.GetSection("App").Get<AppSettings>();
 
+            var logger = new ConsoleLogger();
+
             // target database stuff
             var clientFactory = SqlClientFactory.Instance;
             var csb = clientFactory.CreateConnectionStringBuilder();
             csb.Add("Data Source", appConfig.Server);
             csb.Add("Initial Catalog", appConfig.Database);
             csb.Add("Integrated Security", true);
-            var exporter = new SqlServerSchemaExporter();
+            var exporter = new SqlServerSchemaExporter(logger);
             var target = new DatabaseFactory(clientFactory, csb, exporter);
 
             // pick up scripts
@@ -45,7 +47,6 @@ namespace yadd_cli
                 jobs.Add(new Job(file));
             }
 
-            var logger = new ConsoleLogger();
             var deployer = new Deployer(jobs, target, logger, null);
 
             var result = deployer.Deploy();

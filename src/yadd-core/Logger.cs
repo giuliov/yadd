@@ -5,6 +5,7 @@ namespace yadd.core
     public abstract class Logger
     {
         public abstract void Write(string message);
+        public abstract void WriteError(string message);
 
         internal void ExportingTargetDatabaseSchema()
         {
@@ -39,6 +40,16 @@ namespace yadd.core
         internal void ApplyingScript(Job job)
         {
             Write($"Applying {job.Name} Script");
+        }
+
+        public void ErrorWhileExportingTargetDatabaseSchema(string value, string message)
+        {
+            WriteError($"Error while exporting Target Database Schema: {message} on {value}");
+        }
+
+        public void ExportingTargetDatabaseSchemaObject(string value)
+        {
+            Write($"  exporting {value}");
         }
     }
 }

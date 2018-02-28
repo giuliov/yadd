@@ -37,11 +37,20 @@ namespace yadd.provider.mssql
 
             var transfer = new Transfer(database);
             transfer.CopyAllObjects = false;
-            transfer.CopyAllTables = true;
+            transfer.CopyAllTables = false;
             transfer.CopyAllViews = true;
+            // etc
             transfer.Options = options;
             transfer.ScriptingError += Transfer_ScriptingError;
             transfer.ScriptingProgress += Transfer_ScriptingProgress;
+            foreach (Table table in database.Tables)
+            {
+                // TODO: manage schema and owner
+                if (table.Name != historyTableName)
+                {
+                    transfer.ObjectList.Add(table);
+                }
+            }
             StringCollection scriptBatches = transfer.ScriptTransfer();
 
             return exportFile;

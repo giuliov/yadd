@@ -31,8 +31,9 @@ namespace yadd.core
                 connection.Open();
 
                 logger.ExportingTargetDatabaseSchema();
-                string exportedSchemaPath = targetFactory.Exporter.ExportSchema(targetFactory.Csb);
-                var history = new HistoryTable(exportedSchemaPath);
+                string HistoryTableName = "YaddHistory";
+                string exportedSchemaPath = targetFactory.Exporter.ExportSchema(targetFactory.Csb, HistoryTableName);
+                var history = new HistoryTable(exportedSchemaPath, HistoryTableName);
                 var executor = new JobExecutor(connection, history);
 
                 logger.PreparingTargetDatabase();

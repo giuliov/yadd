@@ -84,13 +84,21 @@ IF (NOT EXISTS
         (SELECT *
             FROM {history.TableName}
             WHERE RecordType = '{(char)record.RecordType}'
-            AND   ScriptVersion = 0x{record.ScriptVersion}))
+            AND   Title = '{record.Title}'))
 BEGIN
     PRINT N'{record.Title} has not run, adding record to history table.';  
     INSERT INTO {history.TableName}
       (RecordType,Title,BaseVersion,ScriptVersion,Username,StartDate,Description)
     VALUES
       ( '{(char)record.RecordType}', '{record.Title}', 0x{record.BaseVersion}, 0x{record.ScriptVersion}, '{record.Username}', SYSDATETIMEOFFSET(), '{record.Description}' )
+END ELSE IF (EXISTS
+        (SELECT *
+            FROM {history.TableName}
+            WHERE RecordType = '{(char)record.RecordType}'
+            AND   Title = '{record.Title}'
+            AND   ScriptVersion <> 0x{record.ScriptVersion}))
+BEGIN
+    RAISERROR( N'A different version of [{record.Title}] already run, but script content has changed.', 18, 1 );  
 END
 GO
 ");

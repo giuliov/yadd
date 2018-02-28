@@ -13,21 +13,14 @@ namespace yadd_cli
     {
         static int Main(string[] args)
         {
-            var defaultConfigurationValues = new Dictionary<string, string>
-            {
-                {"App:Server", @"(localdb)\MSSQLLocalDB"},
-                {"App:Database", "FakeVotingPortalDB"},
-                {"App:ScriptsFolder", "./TestScripts" }
-            };
             var builder = new ConfigurationBuilder()
                 .SetBasePath(Directory.GetCurrentDirectory())
                 // order => priority
-                .AddInMemoryCollection(defaultConfigurationValues)
                 .AddEnvironmentVariables()
                 .AddIniFile("yadd.ini", optional: true)
                 .AddCommandLine(args);
             var config = builder.Build();
-            var appConfig = config.GetSection("App").Get<AppSettings>();
+            var appConfig = config.Get<AppSettings>();
 
             var logger = new ConsoleLogger();
 
@@ -36,7 +29,15 @@ namespace yadd_cli
             var csb = clientFactory.CreateConnectionStringBuilder();
             csb.Add("Data Source", appConfig.Server);
             csb.Add("Initial Catalog", appConfig.Database);
-            csb.Add("Integrated Security", true);
+            if (string.IsNullOrWhiteSpace(appConfig.Password))
+            {
+                csb.Add("Integrated Security", true);
+            }
+            else
+            {
+                csb.Add("User Id", appConfig.Username);
+                csb.Add("Password", appConfig.Password);
+            }
             var exporter = new SqlServerSchemaExporter(logger);
             var target = new DatabaseFactory(clientFactory, csb, exporter);
 

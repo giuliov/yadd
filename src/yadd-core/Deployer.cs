@@ -22,7 +22,7 @@ namespace yadd.core
             this.targetFactory = targetFactory;
         }
 
-        public DeployResult Deploy()
+        public DeployResult Deploy(string outputFile)
         {
             using (var connection = targetFactory.Factory.CreateConnection())
             {
@@ -34,7 +34,8 @@ namespace yadd.core
                 string HistoryTableName = "YaddHistory";
                 string exportedSchemaPath = targetFactory.Exporter.ExportSchema(targetFactory.Csb, HistoryTableName);
                 var history = new HistoryTable(exportedSchemaPath, HistoryTableName);
-                var executor = new JobExecutor(connection, history);
+                logger.OutputTo(outputFile);
+                var executor = new JobExecutor(connection, history, outputFile);
 
                 logger.PreparingTargetDatabase();
                 executor.Setup();
@@ -62,6 +63,11 @@ namespace yadd.core
 
             logger.AllDone();
             return new DeployResult(0, 0);
+        }
+
+        public object Deploy(object outputFile)
+        {
+            throw new NotImplementedException();
         }
     }
 }

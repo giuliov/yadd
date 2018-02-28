@@ -10,11 +10,11 @@ namespace yadd.core
         private HistoryTable history;
         private HistoryRecord record;
 
-        public JobExecutor(DbConnection connection, HistoryTable history)
+        public JobExecutor(DbConnection connection, HistoryTable history, string outputFile)
         {
             this.connection = connection;
             this.history = history;
-            OutputFile = "yadd.sql";
+            OutputFile = outputFile;
             File.WriteAllText(OutputFile, $@"
 --[*]-- Script created on {DateTimeOffset.UtcNow:o}
 ");

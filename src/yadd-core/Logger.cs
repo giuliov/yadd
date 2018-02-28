@@ -51,5 +51,10 @@ namespace yadd.core
         {
             Write($"  exporting {value}");
         }
+
+        internal void OutputTo(string outputFile)
+        {
+            Write($"Generating output to {outputFile}");
+        }
     }
 }

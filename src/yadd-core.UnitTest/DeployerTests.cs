@@ -24,7 +24,7 @@ namespace yadd_core.UnitTest
             var logger = new ConsoleLogger();
             var sut = new Deployer(jobs, target, logger, null);
 
-            var result = sut.Deploy();
+            var result = sut.Deploy("fileoutput.sql");
 
             var expected = new DeployResult(0, 0);
             Assert.Equal(expected, result);

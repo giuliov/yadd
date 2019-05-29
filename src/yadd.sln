@@ -7,8 +7,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "yadd-cli", "yadd-cli\yadd-c
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "yadd-core.UnitTest", "yadd-core.UnitTest\yadd-core.UnitTest.csproj", "{E665AA20-1C18-428C-930D-F397CF524767}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "yadd-mssql-provider", "yadd-mssql-provider\yadd-mssql-provider.csproj", "{B5A7945E-C923-4B48-980B-D02CCACE44DF}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "yadd-mssql-provider.UnitTest", "yadd-mssql-provider.UnitTest\yadd-mssql-provider.UnitTest.csproj", "{F040F7C2-E5E9-4CC3-AB25-C62B9D2E6D58}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "yadd-mssql-provider-FULL", "yadd-mssql-provider-FULL\yadd-mssql-provider-FULL.csproj", "{2DB1C45A-B179-4FB6-A396-EA599869E2A0}"
@@ -29,10 +27,6 @@ Global
 		{E665AA20-1C18-428C-930D-F397CF524767}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E665AA20-1C18-428C-930D-F397CF524767}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E665AA20-1C18-428C-930D-F397CF524767}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B5A7945E-C923-4B48-980B-D02CCACE44DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B5A7945E-C923-4B48-980B-D02CCACE44DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B5A7945E-C923-4B48-980B-D02CCACE44DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B5A7945E-C923-4B48-980B-D02CCACE44DF}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F040F7C2-E5E9-4CC3-AB25-C62B9D2E6D58}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{F040F7C2-E5E9-4CC3-AB25-C62B9D2E6D58}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F040F7C2-E5E9-4CC3-AB25-C62B9D2E6D58}.Release|Any CPU.ActiveCfg = Release|Any CPU

@@ -7,6 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="instawdb.sql" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="instawdb.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
     <PackageReference Include="Microsoft.SqlServer.SqlManagementObjects" Version="140.17224.0" />
     <PackageReference Include="System.Data.SqlClient" Version="4.4.2" />

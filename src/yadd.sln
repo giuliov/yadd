@@ -9,8 +9,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "core", "core\core.csproj", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "providers", "providers", "{743B5B97-2FFF-4522-8AED-E13511BFBBCA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "sqldatabase_net-provider", "providers\sqldatabase_net\sqldatabase_net-provider.csproj", "{7D3C7A0D-05F4-44E1-B929-B4F10BDF70C5}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "postgresql-provider", "providers\postgresql\postgresql-provider.csproj", "{1B1576A7-9536-4424-AC98-65095C7CD4ED}"
 EndProject
 Global
@@ -27,10 +25,6 @@ Global
 		{98AC351D-37CA-4FA3-83D2-A0886D3B0093}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98AC351D-37CA-4FA3-83D2-A0886D3B0093}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98AC351D-37CA-4FA3-83D2-A0886D3B0093}.Release|Any CPU.Build.0 = Release|Any CPU
-		{7D3C7A0D-05F4-44E1-B929-B4F10BDF70C5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{7D3C7A0D-05F4-44E1-B929-B4F10BDF70C5}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{7D3C7A0D-05F4-44E1-B929-B4F10BDF70C5}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{7D3C7A0D-05F4-44E1-B929-B4F10BDF70C5}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1B1576A7-9536-4424-AC98-65095C7CD4ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1B1576A7-9536-4424-AC98-65095C7CD4ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B1576A7-9536-4424-AC98-65095C7CD4ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -40,7 +34,6 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{7D3C7A0D-05F4-44E1-B929-B4F10BDF70C5} = {743B5B97-2FFF-4522-8AED-E13511BFBBCA}
 		{1B1576A7-9536-4424-AC98-65095C7CD4ED} = {743B5B97-2FFF-4522-8AED-E13511BFBBCA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution

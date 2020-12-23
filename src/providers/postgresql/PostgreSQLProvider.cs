@@ -7,6 +7,8 @@ namespace yadd.postgresql_provider
 {
     public class PostgreSQLProvider : IProvider, IDataDefinition
     {
+        public string ConnectionString { get; init; }
+
         public IDataDefinition DataDefinition => this;
 
         public InformationSchema GetInformationSchema()
@@ -20,7 +22,7 @@ namespace yadd.postgresql_provider
         {
             var schemata = new List<InformationSchemata>();
 
-            using var conn = new NpgsqlConnection("Host=localhost;Username=giuli;Database=mydb");
+            using var conn = new NpgsqlConnection(ConnectionString);
             conn.Open();
             using var cmd = new NpgsqlCommand("SELECT catalog_name,schema_name,schema_owner FROM information_schema.schemata WHERE schema_name NOT IN ('pg_catalog','information_schema','pg_toast')", conn);
             using var reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
@@ -41,9 +43,9 @@ namespace yadd.postgresql_provider
         {
             var tables = new List<InformationSchemaTable>();
 
-            using var tablesConn = new NpgsqlConnection("Host=localhost;Username=giuli;Database=mydb");
+            using var tablesConn = new NpgsqlConnection(ConnectionString);
             tablesConn.Open();
-            using var columnsConn = new NpgsqlConnection("Host=localhost;Username=giuli;Database=mydb");
+            using var columnsConn = new NpgsqlConnection(ConnectionString);
             columnsConn.Open();
             using var tablesCmd = new NpgsqlCommand("SELECT table_catalog,table_schema,table_name,table_type FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog','information_schema')", tablesConn);
             using var tablesReader = tablesCmd.ExecuteReader(CommandBehavior.CloseConnection);

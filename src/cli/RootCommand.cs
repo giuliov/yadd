@@ -6,6 +6,11 @@ namespace yadd.cli
     public class RootCommand
     {
         [SubCommand]
+        public package.Package Package { get; set; }
+        [SubCommand]
         public schema.Schema Schema { get; set; }
+
+        [SubCommand]
+        public migration.Migration Migration { get; set; }
     }
 }

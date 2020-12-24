@@ -6,4 +6,8 @@
     <AssemblyName>yadd.core</AssemblyName>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="CompareNETObjects" Version="4.67.0" />
+  </ItemGroup>
+
 </Project>

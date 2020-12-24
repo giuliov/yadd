@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace yadd.core
 {
-    public abstract class InformationSchema
+    public class InformationSchema
     {
-        public IEnumerable<InformationSchemata> Schemata { get; protected set; }
-        public IEnumerable<InformationSchemaTable> Tables { get; protected set; }
+        public InformationSchemata[] Schemata { get; set; }
+        public InformationSchemaTable[] Tables { get; set; }
     }
 }

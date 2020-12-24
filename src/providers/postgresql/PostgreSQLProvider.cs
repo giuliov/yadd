@@ -1,21 +1,35 @@
 ﻿using Npgsql;
+using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using yadd.core;
 
 namespace yadd.postgresql_provider
 {
-    public class PostgreSQLProvider : IProvider, IDataDefinition
+    public class PostgreSQLProvider : IProvider, IDataDefinition, IScriptRunner
     {
         public string ConnectionString { get; init; }
 
         public IDataDefinition DataDefinition => this;
 
+        public IScriptRunner ScriptRunner => this;
+
         public InformationSchema GetInformationSchema()
         {
             var tables = GetInformationSchemaTables();
             var schemata = GetInformationSchemata();
-            return new PSqlInformationSchema(schemata: schemata, tables: tables);
+            return new InformationSchema { Schemata = schemata.ToArray(), Tables = tables.ToArray() };
+        }
+
+        public (int err, string msg) Run(string scriptCode)
+        {
+            using var conn = new NpgsqlConnection(ConnectionString);
+            conn.Open();
+            using var cmd = new NpgsqlCommand(scriptCode, conn);
+            cmd.ExecuteNonQuery();
+
+            return (0, "OK");
         }
 
         private IList<InformationSchemata> GetInformationSchemata()
@@ -28,11 +42,19 @@ namespace yadd.postgresql_provider
             using var reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
             while (reader.Read())
             {
+                /*
                 schemata.Add(new InformationSchemata(
                     catalog: reader.GetString(0),
                     schema: reader.GetString(1),
                     owner: reader.GetString(2)
                     ));
+                */
+                schemata.Add(new InformationSchemata
+                {
+                    Catalog = reader.GetString(0),
+                    Schema = reader.GetString(1),
+                    Owner = reader.GetString(2)
+                });
             }
             reader.Close();
 
@@ -57,28 +79,49 @@ namespace yadd.postgresql_provider
                 using var columnsReader = columnsCmd.ExecuteReader(CommandBehavior.CloseConnection);
                 while (columnsReader.Read())
                 {
-                    columns.Add(new InformationSchemaColumn(
-                        name: columnsReader.GetString(0),
-                        position: columnsReader.GetInt32(1),
-                        @default: columnsReader.IsDBNull(2) ? null : columnsReader.GetString(2),
-                        nullable: columnsReader.GetString(3),
-                        dataType: columnsReader.GetString(4),
-                        maximumLength: columnsReader.GetInt32(5)
-                        ));
+                    columns.Add(new InformationSchemaColumn
+                    {
+                        Name = columnsReader.GetString(0),
+                        Position = columnsReader.GetInt32(1),
+                        Default = columnsReader.IsDBNull(2) ? null : columnsReader.GetString(2),
+                        Nullable = BoolFromYesOrNoString(columnsReader.GetString(3)),
+                        DataType = columnsReader.GetString(4),
+                        MaximumLength = columnsReader.IsDBNull(5) ? 0 : columnsReader.GetInt32(5)
+                    });
                 }
                 columnsReader.Close();
 
-                tables.Add(new InformationSchemaTable(
-                    catalog: tablesReader.GetString(0),
-                    schema: tablesReader.GetString(1),
-                    name: tablesReader.GetString(2),
-                    type: tablesReader.GetString(3),
-                    columns: columns
-                    ));
+                tables.Add(new InformationSchemaTable
+                {
+                    Catalog = tablesReader.GetString(0),
+                    Schema = tablesReader.GetString(1),
+                    Name = tablesReader.GetString(2),
+                    Type = InformationSchemaTableTypeFromString(tablesReader.GetString(3)),
+                    Columns = columns.ToArray()
+                });
             }
             tablesReader.Close();
 
             return tables;
+
+            // local functions
+
+            static bool BoolFromYesOrNoString(string yesOrNo)
+            {
+                return yesOrNo.ToLower() == "yes";
+            }
+
+            static InformationSchemaTable.TableType InformationSchemaTableTypeFromString(string type)
+            {
+                return type switch
+                {
+                    "BASE TABLE" => InformationSchemaTable.TableType.BaseTable,
+                    "VIEW" => InformationSchemaTable.TableType.View,
+                    "FOREIGN" => InformationSchemaTable.TableType.Foreign,
+                    "LOCAL TEMPORARY" => InformationSchemaTable.TableType.LocalTemporary,
+                    _ => throw new Exception($"Unsupported table type '{type}'")
+                };
+            }
         }
     }
 }

@@ -3,5 +3,6 @@
     public interface IProvider
     {
         IDataDefinition DataDefinition { get; }
+        IScriptRunner ScriptRunner { get; }
     }
 }

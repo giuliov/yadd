@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace yadd.core
 {
@@ -11,7 +7,8 @@ namespace yadd.core
     {
         public static string GetHash(byte[] input)
         {
-            using var hashAlgorithm = SHA512.Create();
+            // SHA1 is just for debugging!
+            using var hashAlgorithm = SHA1.Create();
             // Convert the input string to a byte array and compute the hash.
             byte[] data = hashAlgorithm.ComputeHash(input);
             // Create a new Stringbuilder to collect the bytes

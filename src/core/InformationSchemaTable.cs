@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace yadd.core
 {
-    public record InformationSchemaTable
+    public class InformationSchemaTable
     {
         public enum TableType
         {
@@ -13,25 +14,10 @@ namespace yadd.core
             LocalTemporary
         }
 
-        public string Catalog { get; }
-        public string Schema { get; }
-        public string Name { get; }
-        public TableType Type { get; }
-        public IEnumerable<InformationSchemaColumn> Columns { get; }
-
-        public InformationSchemaTable(string catalog, string schema, string name, string type, IEnumerable<InformationSchemaColumn> columns)
-            => (Catalog, Schema, Name, Type, Columns) = (catalog, schema, name, InformationSchemaTableTypeFromString(type), columns);
-
-        static TableType InformationSchemaTableTypeFromString(string type)
-        {
-            return type switch
-            {
-                "BASE TABLE" => TableType.BaseTable,
-                "VIEW" => TableType.View,
-                "FOREIGN" => TableType.Foreign,
-                "LOCAL TEMPORARY" => TableType.LocalTemporary,
-                _ => throw new Exception($"Unsupported table type '{type}'")
-            };
-        }
+        public string Catalog { get; set; }
+        public string Schema { get; set; }
+        public string Name { get; set; }
+        public TableType Type { get; set; }
+        public InformationSchemaColumn[] Columns { get; set; }
     }
 }

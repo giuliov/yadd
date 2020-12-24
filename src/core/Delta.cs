@@ -16,7 +16,7 @@ namespace yadd.core
     {
         public DeltaId Id { get; internal set; }
         public string CommitMessage { get; internal set; }
-        public List<DeltaScript> Scripts { get; internal set; }
+        public DeltaScript[] Scripts { get; internal set; }
         public BaselineId ParentBaselineId { get; internal set; }
     }
 }

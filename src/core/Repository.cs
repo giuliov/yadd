@@ -118,44 +118,57 @@ namespace yadd.core
                    .Where(line => !line.StartsWith(hash)));
         }
 
-        public IEnumerable<(string name, string code)> GetStagedScripts()
+        public IEnumerable<DeltaScript> GetStagedScripts()
         {
             return GetDeltaScripts(StagingIndexPath);
         }
 
-        private IEnumerable<(string name, string code)> GetDeltaScripts(string indexPath)
+        private IEnumerable<DeltaScript> GetDeltaScripts(string indexPath)
         {
             string baseDir = Directory.GetParent(indexPath).FullName;
             foreach (var rec in File.ReadAllLines(indexPath))
             {
                 string[] parts = rec.Split(' ');
-                yield return (parts[1], File.ReadAllText(Path.Combine(baseDir, parts[0])));
+                yield return new DeltaScript
+                {
+                    Name = parts[0],
+                    Code = File.ReadAllText(Path.Combine(baseDir, parts[1]))
+                };
             }
         }
 
-        public void Commit(string message, Baseline newBaseline)
+        public BaselineId Commit(string message, Baseline newBaseline)
         {
-            var workDir = Directory.CreateDirectory(Path.Combine(DeltaDir, "tmp"));
-
-            var steps = new List<string>();
-            foreach (var full in Directory.EnumerateFiles(StagingDir))
+            var delta = new Delta
             {
-                string name = Path.GetFileName(full);
-                steps.Add(name);
-                string target = Path.Combine(workDir.FullName, name);
-                File.Move(full, target);
+                CommitMessage = message,
+                ParentBaselineId = GetCurrentBaselineId(),
+                Scripts = GetStagedScripts().ToArray()
+            };
+            string jsonString = JsonSerializer.Serialize(delta);
+            delta.Id = new DeltaId(Hasher.GetHash(jsonString));
+
+            // delta directory
+            string deltaDir = Path.Combine(DeltaDir, delta.Id.Filename);
+            Directory.CreateDirectory(deltaDir);
+
+            // serialize the object to disk
+            delta.ParentBaselineId.Write(Path.Combine(deltaDir, "parent_baseline"));
+            File.WriteAllText(Path.Combine(deltaDir, "commit_message"), delta.CommitMessage);
+            foreach (var script in delta.Scripts)
+            {
+                var scriptId = new DeltaScriptId( Hasher.GetHash(script.Code));
+                File.WriteAllText(Path.Combine(deltaDir, scriptId.Filename), script.Code);
+                File.AppendAllLines(Path.Combine(deltaDir, "index"), new string[] { $"{script.Name} {scriptId.Filename}" });
+                // File.AppendAllLines(Path.Combine(deltaDir, "index"), new string[] { $"{script.Name} {scriptId.Filename} {scriptId.Hash}" });
             }
-            var parentId = GetCurrentBaselineId();
-            parentId.Write(Path.Combine(workDir.FullName, "parent_baseline"));
-            steps.Add(parentId.Hash);
-            File.WriteAllText(Path.Combine(workDir.FullName, "commit_message"), message);
-            steps.Add(message);
 
-            string hash = Hasher.GetHash(string.Join('\n', steps));
-            var deltaId = new DeltaId(hash);
-            workDir.MoveTo(Path.Combine(DeltaDir, deltaId.Filename));
+            foreach (var staged in Directory.EnumerateFiles(StagingDir))
+            {
+                File.Delete(staged);
+            }
 
-            var newBaselineId = AddBaseline(newBaseline, deltaId);
+            return AddBaseline(newBaseline, delta.Id);
         }
 
         public IEnumerable<Delta> GetDeltas(Baseline initialBaseline)
@@ -171,16 +184,17 @@ namespace yadd.core
                     break;
                 var deltaId = ObjectId.Read<DeltaId>(deltaIdPath);
                 string deltaDir = Path.Combine(DeltaDir, deltaId.Filename);
-                var delta = new Delta {
-                    Id = deltaId,
+
+                var delta = new Delta
+                {
                     CommitMessage = File.ReadAllText(Path.Combine(deltaDir, "commit_message")),
                     ParentBaselineId = ObjectId.Read<BaselineId>(Path.Combine(deltaDir, "parent_baseline")),
-                    Scripts = new List<DeltaScript>()
+                    Scripts = GetDeltaScripts(Path.Combine(deltaDir, "index")).ToArray()
                 };
-                foreach (var item in GetDeltaScripts(Path.Combine(deltaDir, "index.txt")))
-                {
-                    delta.Scripts.Add(new DeltaScript { Name = item.name, Code = item.code });
-                }
+                // check delta hash!
+                string jsonString = JsonSerializer.Serialize(delta);
+                delta.Id = new DeltaId(Hasher.GetHash(jsonString));
+                if (!deltaId.Equals(delta.Id)) throw new Exception($"Delta {deltaId} content is tampered");
 
                 deltas.Push(delta);
 

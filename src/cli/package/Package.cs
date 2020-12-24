@@ -42,10 +42,10 @@ namespace yadd.cli.package
             var provider = factory.Get();
 
             // apply scripts in order
-            repo.GetStagedScripts().ToList().ForEach((s) =>
+            repo.GetStagedScripts().ToList().ForEach((delta) =>
             {
-                console.Write($"Applying script {s.name}...");
-                (int err, string msg) = provider.ScriptRunner.Run(s.code);
+                console.Write($"Applying script {delta.Name}...");
+                (int err, string msg) = provider.ScriptRunner.Run(delta.Code);
                 console.WriteLine($"{msg}");
             });
 

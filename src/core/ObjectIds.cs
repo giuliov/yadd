@@ -44,4 +44,9 @@ namespace yadd.core
     {
         public DeltaId(string hash) : base(hash) { }
     }
+
+    public class DeltaScriptId : ObjectId
+    {
+        public DeltaScriptId(string hash) : base(hash) { }
+    }
 }

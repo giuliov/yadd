@@ -103,6 +103,7 @@ namespace yadd.cli
                     },
                     delta =>
                     {
+                        console.WriteLine();
                         // apply scripts in order
                         console.WriteLine($"  Delta {delta.Id.Displayname}: {delta.CommitMessage}");
                         foreach (var script in delta.Scripts)
@@ -114,6 +115,20 @@ namespace yadd.cli
                     });
             }
             console.WriteLine("------------------------------------------------------------");
+        }
+
+        [Command(Description = "Searches a baseline matching database state")]
+        public void FindBaseline(IConsole console, CancellationToken cancellationToken, ProviderOptions options)
+        {
+            var repo = Repository.FindUpward();
+
+            var provider = factory.Get(options);
+
+            var baseline = TakeBaseline(provider);
+            var result = repo.FindMatch(baseline);
+            console.WriteLine(result.found
+                ? $"Found baseline {result.id.Displayname}"
+                : $"No match found.");
         }
 
         [Command(Description = "Migrate database")]

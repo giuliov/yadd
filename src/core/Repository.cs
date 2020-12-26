@@ -83,16 +83,10 @@ namespace yadd.core
         private BaselineId AddBaseline(Baseline baseline, DeltaId deltaId = null)
         {
             baseline.ParentId = GetCurrentBaselineId();
+            baseline.DeltaId = deltaId;
 
-            string jsonString = JsonSerializer.Serialize(baseline);
-            string hash = Hasher.GetHash(jsonString);
-            var id = new BaselineId(hash);
+            var id = baseline.SerializeTo(BaselineDir);
 
-            string baselineDir = Directory.CreateDirectory(Path.Combine(BaselineDir, id.Filename)).FullName;
-            File.WriteAllText(Path.Combine(baselineDir, "schema.json"), jsonString);
-            var parentId = GetCurrentBaselineId();
-            if (parentId != null) parentId.Write(Path.Combine(baselineDir, "parent_baseline"));
-            if (deltaId != null) deltaId.Write(Path.Combine(baselineDir, "delta"));
             id.Write(CurrentBaselinePath);
 
             return id;
@@ -118,14 +112,29 @@ namespace yadd.core
 
         public Baseline GetBaseline(BaselineId id)
         {
-            string jsonString = File.ReadAllText(Path.Combine(BaselineDir, id.Filename, "schema.json"));
-            var baseline = JsonSerializer.Deserialize<Baseline>(jsonString);
-            string hash = Hasher.GetHash(jsonString);
-            baseline.Id = new BaselineId(hash);
+            var baseline = Baseline.DeserializeFrom(Path.Combine(BaselineDir, id.Filename));
 
-            if (Path.GetFileName(id.Filename) != baseline.Id.Filename) throw new Exception($"Invalid Baseline '{baseline.Id.Filename}'");
+            if (!id.Equals (baseline.Id)) throw new Exception($"Invalid Baseline '{baseline.Id.Filename}'");
 
             return baseline;
+        }
+
+        public (bool found, BaselineId id) FindMatch(Baseline baseline)
+        {
+            var core = baseline.GetCore();
+
+            foreach (var dir in Directory.EnumerateDirectories(BaselineDir))
+            {
+                string schema_hash = File.ReadAllText(Path.Combine(dir, "schema_hash"));
+                if (schema_hash == core.hash)
+                {
+                    string meta = File.ReadAllText(Path.Combine(dir, "meta"));
+                    var id = new BaselineId(Hasher.GetHash(meta));
+                    return (found: true, id: id);
+                }
+            }
+
+            return (found: false, null);
         }
 
         public void Stage(string filename)
@@ -149,7 +158,7 @@ namespace yadd.core
         {
             return (File.Exists(StagingIndexPath))
                 ? File.ReadAllLines(StagingIndexPath).Select(rec => rec.Split(' ')[1])
-                : new string[0];
+                : Array.Empty<string>();
         }
 
         public IEnumerable<DeltaScript> GetStagedScripts()

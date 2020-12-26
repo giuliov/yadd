@@ -1,19 +1,16 @@
-﻿using yadd.postgresql_provider;
-
-namespace yadd.core
+﻿namespace yadd.core
 {
     public class ProviderFactory
     {
-        string ConnectionString { get; init; }
-
-        public ProviderFactory(string connectionString)
+        public IProvider Get(ProviderOptions options)
         {
-            ConnectionString = connectionString;
-        }
-
-        public IProvider Get()
-        {
-            return new PostgreSQLProvider { ConnectionString = this.ConnectionString };
+            // HACK
+            return options.ProviderName.ToLower() switch
+            {
+                "mssql" => new mssql_provider.SQLServerProvider { ConnectionString = options.ConnectionString },
+                "postgresql" => new postgresql_provider.PostgreSQLProvider { ConnectionString = options.ConnectionString },
+                _ => throw new System.NotImplementedException(),
+            };
         }
     }
 }

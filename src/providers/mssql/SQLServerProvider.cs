@@ -1,13 +1,13 @@
-﻿using Npgsql;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using yadd.core;
 
-namespace yadd.postgresql_provider
+namespace yadd.mssql_provider
 {
-    public class PostgreSQLProvider : IProvider, IDataDefinition, IScriptRunner
+    public class SQLServerProvider : IProvider, IDataDefinition, IScriptRunner
     {
         public string ConnectionString { get; init; }
 
@@ -24,9 +24,9 @@ namespace yadd.postgresql_provider
 
         public (int err, string msg) Run(string scriptCode)
         {
-            using var conn = new NpgsqlConnection(ConnectionString);
+            using var conn = new SqlConnection(ConnectionString);
             conn.Open();
-            using var cmd = new NpgsqlCommand(scriptCode, conn);
+            using var cmd = new SqlCommand(scriptCode, conn);
             cmd.ExecuteNonQuery();
 
             return (0, "OK");
@@ -36,9 +36,9 @@ namespace yadd.postgresql_provider
         {
             var schemata = new List<InformationSchemata>();
 
-            using var conn = new NpgsqlConnection(ConnectionString);
+            using var conn = new SqlConnection(ConnectionString);
             conn.Open();
-            using var cmd = new NpgsqlCommand("SELECT catalog_name,schema_name,schema_owner FROM information_schema.schemata WHERE schema_name NOT IN ('pg_catalog','information_schema','pg_toast')", conn);
+            using var cmd = new SqlCommand("SELECT catalog_name,schema_name,schema_owner FROM information_schema.schemata WHERE schema_name NOT IN ('dbo' ,'guest' ,'INFORMATION_SCHEMA' ,'sys' ,'db_owner' ,'db_accessadmin' ,'db_securityadmin' ,'db_ddladmin' ,'db_backupoperator' ,'db_datareader' ,'db_datawriter' ,'db_denydatareader' ,'db_denydatawriter')", conn);
             using var reader = cmd.ExecuteReader(CommandBehavior.CloseConnection);
             while (reader.Read())
             {
@@ -58,17 +58,17 @@ namespace yadd.postgresql_provider
         {
             var tables = new List<InformationSchemaTable>();
 
-            using var tablesConn = new NpgsqlConnection(ConnectionString);
+            using var tablesConn = new SqlConnection(ConnectionString);
             tablesConn.Open();
-            using var columnsConn = new NpgsqlConnection(ConnectionString);
+            using var columnsConn = new SqlConnection(ConnectionString);
             columnsConn.Open();
-            using var tablesCmd = new NpgsqlCommand("SELECT table_catalog,table_schema,table_name,table_type FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog','information_schema')", tablesConn);
+            using var tablesCmd = new SqlCommand("SELECT table_catalog,table_schema,table_name,table_type FROM information_schema.tables", tablesConn);
             using var tablesReader = tablesCmd.ExecuteReader(CommandBehavior.CloseConnection);
             while (tablesReader.Read())
             {
                 var columns = new List<InformationSchemaColumn>();
 
-                using var columnsCmd = new NpgsqlCommand($"SELECT column_name,ordinal_position,column_default,is_nullable,data_type,character_maximum_length FROM information_schema.columns WHERE table_catalog ='{ tablesReader.GetString(0) }' AND table_schema= '{tablesReader.GetString(1)}' AND table_name= '{tablesReader.GetString(2)}' ", columnsConn);
+                using var columnsCmd = new SqlCommand($"SELECT column_name,ordinal_position,column_default,is_nullable,data_type,character_maximum_length FROM information_schema.columns WHERE table_catalog ='{ tablesReader.GetString(0) }' AND table_schema= '{tablesReader.GetString(1)}' AND table_name= '{tablesReader.GetString(2)}' ", columnsConn);
                 using var columnsReader = columnsCmd.ExecuteReader(CommandBehavior.CloseConnection);
                 while (columnsReader.Read())
                 {

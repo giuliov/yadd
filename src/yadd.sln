@@ -5,11 +5,13 @@ VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "cli", "cli\cli.csproj", "{06078C6C-EA62-42ED-B8B7-BD35A0ABFCA6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "core", "core\core.csproj", "{98AC351D-37CA-4FA3-83D2-A0886D3B0093}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core", "core\core.csproj", "{98AC351D-37CA-4FA3-83D2-A0886D3B0093}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "providers", "providers", "{743B5B97-2FFF-4522-8AED-E13511BFBBCA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "postgresql-provider", "providers\postgresql\postgresql-provider.csproj", "{1B1576A7-9536-4424-AC98-65095C7CD4ED}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mssql-provider", "providers\mssql\mssql-provider.csproj", "{29F71F9D-4CA6-40EE-B17F-544BC496CE1D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -29,12 +31,17 @@ Global
 		{1B1576A7-9536-4424-AC98-65095C7CD4ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1B1576A7-9536-4424-AC98-65095C7CD4ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1B1576A7-9536-4424-AC98-65095C7CD4ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{29F71F9D-4CA6-40EE-B17F-544BC496CE1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{29F71F9D-4CA6-40EE-B17F-544BC496CE1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{29F71F9D-4CA6-40EE-B17F-544BC496CE1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{29F71F9D-4CA6-40EE-B17F-544BC496CE1D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{1B1576A7-9536-4424-AC98-65095C7CD4ED} = {743B5B97-2FFF-4522-8AED-E13511BFBBCA}
+		{29F71F9D-4CA6-40EE-B17F-544BC496CE1D} = {743B5B97-2FFF-4522-8AED-E13511BFBBCA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8DFD1780-B423-4F34-AEB8-9873C820F06F}

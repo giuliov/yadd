@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Semver;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
@@ -14,6 +15,19 @@ namespace yadd.mssql_provider
         public IDataDefinition DataDefinition => this;
 
         public IScriptRunner ScriptRunner => this;
+
+        public SemVersion ProviderVersion => new SemVersion(major: 0, minor: 1, prerelease: "alpha");
+
+        public ServerVersionInfo GetServerVersion()
+        {
+            using var conn = new SqlConnection(ConnectionString);
+            conn.Open();
+            using var cmd = new SqlCommand("SELECT SERVERPROPERTY('productversion')", conn);
+            string ver = (string)cmd.ExecuteScalar();
+            using var cmd_full = new SqlCommand("SELECT @@version", conn);
+            string ver_full = (string)cmd_full.ExecuteScalar();
+            return new ServerVersionInfo { Provider = "mssql", Version = ver, FullVersion = ver_full };
+        }
 
         public InformationSchema GetInformationSchema()
         {

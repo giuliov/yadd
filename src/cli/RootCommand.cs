@@ -13,13 +13,27 @@ namespace yadd.cli
     {
         ProviderFactory factory = new ProviderFactory();
 
+        [Command]
+        public void Info(IConsole console, CancellationToken cancellationToken, ProviderOptions options)
+        {
+            var provider = factory.Get(options);
+            var info = provider.GetServerVersion();
+            console.WriteLine(info.Version);
+            console.WriteLine(info.FullVersion);
+        }
+
+        private static Baseline TakeBaseline(IProvider provider)
+        {
+            var schema = provider.DataDefinition.GetInformationSchema();
+            var baseline = new Baseline { InformationSchema = schema, ServerInfo = provider.GetServerVersion() };
+            return baseline;
+        }
+
         [Command(Description = "Initialize a repository")]
         public void Init(IConsole console, CancellationToken cancellationToken, ProviderOptions options)
         {
             var provider = factory.Get(options);
-            var schema = provider.DataDefinition.GetInformationSchema();
-
-            var baseline = new Baseline { InformationSchema = schema };
+            var baseline = TakeBaseline(provider);
             var repo = Repository.Init(baseline);
         }
 
@@ -65,8 +79,7 @@ namespace yadd.cli
             });
 
             // take snapshot of new DB state
-            var schema = provider.DataDefinition.GetInformationSchema();
-            var baseline = new Baseline { InformationSchema = schema };
+            var baseline = TakeBaseline(provider);
 
             (BaselineId parentId, BaselineId newId) = repo.Commit(message, baseline);
 
@@ -85,7 +98,7 @@ namespace yadd.cli
                     baseline =>
                     {
                         console.WriteLine("------------------------------------------------------------");
-                        console.WriteLine($"Baseline {baseline.Id.Displayname} @ {baseline.Timestamp}");
+                        console.WriteLine($"Baseline {baseline.Id.Displayname} on {baseline.Timestamp} from {baseline.ServerInfo.Provider} {baseline.ServerInfo.Version}");
                         return true;
                     },
                     delta =>
@@ -94,7 +107,7 @@ namespace yadd.cli
                         console.WriteLine($"  Delta {delta.Id.Displayname}: {delta.CommitMessage}");
                         foreach (var script in delta.Scripts)
                         {
-                            console.WriteLine($"  Script {script.Name}:");
+                            console.WriteLine($"  + Script {script.Name}:");
                             console.WriteLine(script.Code);
                         }
                         return true;
@@ -104,43 +117,65 @@ namespace yadd.cli
         }
 
         [Command(Description = "Migrate database")]
-        public void UpgradeFrom(IConsole console, CancellationToken cancellationToken, ProviderOptions options,
-            [Required] string fromBaseline)
+        public void Upgrade(IConsole console, CancellationToken cancellationToken, ProviderOptions options,
+            [Option] string fromBaseline,
+            [Option] string toBaseline)
         {
             var repo = Repository.FindUpward();
 
             var provider = factory.Get(options);
 
-            var baseline = repo.GetMatchingBaseline(fromBaseline);
-            console.WriteLine($"Found {baseline.Id.Displayname} baseline");
+            Baseline initialBaseline;
+            if (string.IsNullOrEmpty(fromBaseline))
+            {
+                initialBaseline = repo.GetRootBaseline();
+                console.WriteLine($"From: Using root baseline {initialBaseline.Id.Displayname}");
+            }
+            else
+            {
+                initialBaseline = repo.GetMatchingBaseline(fromBaseline);
+                console.WriteLine($"From: Found {initialBaseline.Id.Displayname} baseline");
+            }
+            Baseline finalBaseline;
+            if (string.IsNullOrEmpty(toBaseline))
+            {
+                finalBaseline = repo.GetCurrentBaseline();
+                console.WriteLine($"To: Using current baseline {finalBaseline.Id.Displayname}");
+            }
+            else
+            {
+                finalBaseline = repo.GetMatchingBaseline(toBaseline);
+                console.WriteLine($"To: Found {finalBaseline.Id.Displayname} baseline");
+            }
 
-            foreach (var item in repo.GetHistorySince(baseline))
+            foreach (var item in repo.GetHistoryBetween(initialBaseline, finalBaseline))
             {
                 bool ok = item.Match(
                     baseline =>
                     {
                         // baseline matches?
+                        console.Write($"Comparing Database with Baseline {baseline.Id.Displayname}");
                         var schema = provider.DataDefinition.GetInformationSchema();
                         var compareLogic = new CompareLogic();
                         var compareResult = compareLogic.Compare(schema, baseline.InformationSchema);
                         if (!compareResult.AreEqual)
                         {
-                            console.WriteLine($"Database does not match Baseline {baseline.Id.Displayname}: cannot apply package");
+                            console.WriteLine($": no match, cannot apply changes");
                             return false;
                         }
                         else
                         {
-                            console.WriteLine($"Database matches Baseline {baseline.Id.Displayname}");
+                            console.WriteLine($": matches applying changes");
                             return true;
                         }
                     },
                     delta =>
                     {
                         // apply scripts in order
-                        console.WriteLine($"Applying delta {delta.Id.Displayname}");
+                        console.WriteLine($"  Applying delta {delta.Id.Displayname}");
                         foreach (var script in delta.Scripts)
                         {
-                            console.Write($"Applying script {script.Name}...");
+                            console.Write($"  + Applying script {script.Name}...");
                             (int err, string msg) = provider.ScriptRunner.Run(script.Code);
                             console.WriteLine($"{msg}");
                         }

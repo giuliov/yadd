@@ -9,7 +9,7 @@
             {
                 "mssql" => new mssql_provider.SQLServerProvider { ConnectionString = options.ConnectionString },
                 "postgresql" => new postgresql_provider.PostgreSQLProvider { ConnectionString = options.ConnectionString },
-                _ => throw new System.NotImplementedException(),
+                _ => throw new System.NotImplementedException($"Unknown provider {options.ProviderName}"),
             };
         }
     }

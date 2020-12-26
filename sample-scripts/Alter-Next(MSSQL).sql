@@ -1,0 +1,1 @@
+sp_rename 'pippo.eta', 'age', 'COLUMN'

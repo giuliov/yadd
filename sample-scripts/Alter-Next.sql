@@ -1,0 +1,2 @@
+﻿ALTER TABLE pippo
+  RENAME COLUMN eta TO age

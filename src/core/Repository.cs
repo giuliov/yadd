@@ -26,7 +26,7 @@ namespace yadd.core
         public static Repository Init(Baseline baseline)
         {
             if (Directory.Exists(RootName))
-                throw new Exception("Package already initialized");
+                throw new Exception("Repository already initialized");
 
             var repoDir = Directory.CreateDirectory(RootName);
             File.WriteAllText(Path.Combine(repoDir.FullName, InfoName), $"{RepoFormat} yadd");
@@ -75,6 +75,11 @@ namespace yadd.core
             return ObjectId.Read<BaselineId>(CurrentBaselinePath);
         }
 
+        private BaselineId GetRootBaselineId()
+        {
+            return ObjectId.Read<BaselineId>(Path.Combine(Root, "root_baseline"));
+        }
+
         private BaselineId AddBaseline(Baseline baseline, DeltaId deltaId = null)
         {
             baseline.ParentId = GetCurrentBaselineId();
@@ -99,6 +104,16 @@ namespace yadd.core
             if (matches.Length != 1) throw new Exception($"Cannot find Baseline '{idMatch}'");
             string id = Path.GetFileName(matches[0]);
             return GetBaseline(new BaselineId(id));
+        }
+
+        public Baseline GetRootBaseline()
+        {
+            return GetBaseline(GetRootBaselineId());
+        }
+
+        public Baseline GetCurrentBaseline()
+        {
+            return GetBaseline(GetCurrentBaselineId());
         }
 
         public Baseline GetBaseline(BaselineId id)
@@ -191,12 +206,12 @@ namespace yadd.core
             return (parent: delta.ParentBaselineId, @new: newBaselineId);
         }
 
-        public IEnumerable<HistoryItem> GetHistorySince(Baseline initialBaseline)
+        public IEnumerable<HistoryItem> GetHistoryBetween(Baseline initialBaseline, Baseline finalBaseline)
         {
             var history = new Stack<HistoryItem>();
 
             // move backward through history
-            var currentId = GetCurrentBaselineId();
+            var currentId = finalBaseline.Id;
             while (!currentId.Equals(initialBaseline.Id))
             {
                 var currentBaseline = GetBaseline(currentId);

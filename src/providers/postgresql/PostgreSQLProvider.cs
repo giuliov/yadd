@@ -1,4 +1,5 @@
 ﻿using Npgsql;
+using Semver;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,6 +15,19 @@ namespace yadd.postgresql_provider
         public IDataDefinition DataDefinition => this;
 
         public IScriptRunner ScriptRunner => this;
+
+        public SemVersion ProviderVersion => new SemVersion(major: 0, minor: 1, prerelease: "alpha");
+
+        public ServerVersionInfo GetServerVersion()
+        {
+            using var conn = new NpgsqlConnection(ConnectionString);
+            conn.Open();
+            using var cmd = new NpgsqlCommand("SHOW server_version", conn);
+            string ver = (string)cmd.ExecuteScalar();
+            using var cmd_full = new NpgsqlCommand("SELECT version()", conn);
+            string ver_full = (string)cmd_full.ExecuteScalar();
+            return new ServerVersionInfo { Provider = "postgresql", Version = ver, FullVersion = ver_full };
+        }
 
         public InformationSchema GetInformationSchema()
         {

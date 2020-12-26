@@ -10,40 +10,52 @@ namespace yadd.cli.migration
     [Command(Description = "Manages Database Migrations.")]
     public class Migration
     {
-        // HACK
-        ProviderFactory factory = new ProviderFactory("Host=localhost;Username=giuli;Database=mydb");
+        ProviderFactory factory = new ProviderFactory();
 
-        [Command(Description = "Dump user schema info")]
-        public void Upgrade(IConsole console, CancellationToken cancellationToken,
-            [Required] string baselineHint)
+        [Command(Description = "Migrate database")]
+        public void Upgrade(IConsole console, CancellationToken cancellationToken, ProviderOptions options,
+            [Required] string fromBaseline)
         {
             var repo = Repository.FindUpward();
 
-            var provider = factory.Get();
+            var provider = factory.Get(options);
 
-            var baseline = repo.GetBaseline(baselineHint);
-            console.WriteLine($"Baseline {baseline.Id.Filename} matches");
+            var baseline = repo.GetMatchingBaseline(fromBaseline);
+            console.WriteLine($"Found {baseline.Id.Displayname} baseline");
 
-            // baseline matches?
-            var schema = provider.DataDefinition.GetInformationSchema();
-            var compareLogic = new CompareLogic();
-            var compareResult = compareLogic.Compare(schema, baseline.InformationSchema);
-            if (!compareResult.AreEqual)
+            foreach (var item in repo.GetHistorySince(baseline))
             {
-                console.WriteLine("Baseline does not match: cannot apply package");
-                return;
-            }
-
-            // apply scripts in order
-            foreach (var delta in repo.GetDeltas(baseline))
-            {
-                console.WriteLine($"Applying delta {delta.Id.Filename}");
-                foreach (var script in delta.Scripts)
-                {
-                    console.Write($"Applying script {script.Name}...");
-                    (int err, string msg) = provider.ScriptRunner.Run(script.Code);
-                    console.WriteLine($"{msg}");
-                }
+                bool ok = item.Match(
+                    baseline =>
+                    {
+                        // baseline matches?
+                        var schema = provider.DataDefinition.GetInformationSchema();
+                        var compareLogic = new CompareLogic();
+                        var compareResult = compareLogic.Compare(schema, baseline.InformationSchema);
+                        if (!compareResult.AreEqual)
+                        {
+                            console.WriteLine($"Database does not match Baseline {baseline.Id.Displayname}: cannot apply package");
+                            return false;
+                        }
+                        else
+                        {
+                            console.WriteLine($"Database matches Baseline {baseline.Id.Displayname}");
+                            return true;
+                        }
+                    },
+                    delta =>
+                    {
+                        // apply scripts in order
+                        console.WriteLine($"Applying delta {delta.Id.Displayname}");
+                        foreach (var script in delta.Scripts)
+                        {
+                            console.Write($"Applying script {script.Name}...");
+                            (int err, string msg) = provider.ScriptRunner.Run(script.Code);
+                            console.WriteLine($"{msg}");
+                        }
+                        return true;
+                    });
+                if (!ok) break;
             }
         }
     }

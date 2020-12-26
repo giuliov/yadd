@@ -7,6 +7,7 @@ namespace yadd.core
     {
         public string Hash { get; init; }
         public string Filename => Hash.Substring(0, 38);
+        public string Displayname => Hash.Substring(0, 8);
 
         protected ObjectId() { }
 

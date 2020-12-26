@@ -1,4 +1,5 @@
-﻿using System.Text.Json.Serialization;
+﻿using System;
+using System.Text.Json.Serialization;
 
 namespace yadd.core
 {
@@ -8,6 +9,7 @@ namespace yadd.core
         public BaselineId Id { get; set; }
         [JsonIgnore]
         public BaselineId ParentId { get; set; }
+        public DateTimeOffset Timestamp { get; set; } = DateTimeOffset.Now;
         public InformationSchema InformationSchema { get; set; }
     }
 }

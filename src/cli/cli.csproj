@@ -23,6 +23,7 @@
   
   <ItemGroup>
     <ProjectReference Include="..\core\core.csproj" />
+    <ProjectReference Include="..\providers\mssql\mssql-provider.csproj" />
     <ProjectReference Include="..\providers\postgresql\postgresql-provider.csproj" />
   </ItemGroup>
 

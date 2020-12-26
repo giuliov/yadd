@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommandDotNet" Version="4.1.4" />
     <PackageReference Include="CompareNETObjects" Version="4.67.0" />
+    <PackageReference Include="OneOf" Version="3.0.163" />
   </ItemGroup>
 
 </Project>

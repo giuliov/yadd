@@ -37,7 +37,8 @@ namespace yadd.core
                 DeltaDir = repoDir.CreateSubdirectory("delta").FullName,
                 StagingDir = repoDir.CreateSubdirectory("staging").FullName
             };
-            repo.AddBaseline(baseline);
+            var rootId = repo.AddBaseline(baseline);
+            rootId.Write(Path.Combine(repoDir.FullName, "root_baseline"));
             return repo;
         }
 

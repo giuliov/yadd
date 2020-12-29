@@ -8,6 +8,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core", "core\core.csproj", "{98AC351D-37CA-4FA3-83D2-A0886D3B0093}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "providers", "providers", "{743B5B97-2FFF-4522-8AED-E13511BFBBCA}"
+	ProjectSection(SolutionItems) = preProject
+		providers\providers.toml = providers\providers.toml
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "postgresql-provider", "providers\postgresql\postgresql-provider.csproj", "{1B1576A7-9536-4424-AC98-65095C7CD4ED}"
 EndProject

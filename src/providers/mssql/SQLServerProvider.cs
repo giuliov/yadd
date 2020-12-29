@@ -8,27 +8,26 @@ using yadd.core;
 
 namespace yadd.mssql_provider
 {
-    public class SQLServerQueryProvider : IGenericProviderQueries
+    public class SQLServerQueryProvider : GenericProviderQueriesFromConfig, IGenericProviderQueries
     {
-        public string ProviderName => "mssql";
+        public override string ProviderName => "mssql";
 
-        public string VersionQuery => "SELECT SERVERPROPERTY('productversion')";
+        public override string VersionQuery { get; protected init; }
 
-        public string FullVersionQuery => "SELECT @@version";
+        public override string FullVersionQuery { get; protected init; }
 
-        public string InformationSchemataQuery => "SELECT catalog_name,schema_name,schema_owner FROM information_schema.schemata WHERE schema_name NOT IN ('dbo' ,'guest' ,'INFORMATION_SCHEMA' ,'sys' ,'db_owner' ,'db_accessadmin' ,'db_securityadmin' ,'db_ddladmin' ,'db_backupoperator' ,'db_datareader' ,'db_datawriter' ,'db_denydatareader' ,'db_denydatawriter')";
+        public override string InformationSchemataQuery { get; protected init; }
 
-        public string InformationSchemaTablesQuery => "SELECT table_catalog,table_schema,table_name,table_type FROM information_schema.tables";
+        public override string InformationSchemaTablesQuery { get; protected init; }
 
-        public string InformationSchemaColumnsQuery(string catalog, string schema, string table)
-            => $"SELECT column_name,ordinal_position,column_default,is_nullable,data_type,character_maximum_length FROM information_schema.columns WHERE table_catalog ='{catalog }' AND table_schema= '{schema}' AND table_name= '{table}' ";
+        public override string InformationSchemaColumnsQuery { get; protected init; }
 
-        public IDbCommand NewCommand(string query, IDbConnection connection)
+        public override IDbCommand NewCommand(string query, IDbConnection connection)
         {
             return new SqlCommand(query, (SqlConnection)connection);
         }
 
-        public IDbConnection NewConnection(string connectionString)
+        public override IDbConnection NewConnection(string connectionString)
         {
             return new SqlConnection(connectionString);
         }

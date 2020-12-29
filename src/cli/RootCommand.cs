@@ -1,6 +1,5 @@
 ﻿using CommandDotNet;
 using CommandDotNet.Rendering;
-using KellermanSoftware.CompareNetObjects;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading;
@@ -24,8 +23,8 @@ namespace yadd.cli
 
         private static Baseline TakeBaseline(IProvider provider)
         {
-            var schema = provider.DataDefinition.GetInformationSchema();
-            var baseline = new Baseline { InformationSchema = schema, ServerInfo = provider.GetServerVersion() };
+            var data = provider.DataDefinition.GetBaselineData();
+            var baseline = new Baseline { Data = data, ServerInfo = provider.GetServerVersion() };
             return baseline;
         }
 
@@ -170,10 +169,8 @@ namespace yadd.cli
                     {
                         // baseline matches?
                         console.Write($"Comparing Database with Baseline {baseline.Id.Displayname}");
-                        var schema = provider.DataDefinition.GetInformationSchema();
-                        var compareLogic = new CompareLogic();
-                        var compareResult = compareLogic.Compare(schema, baseline.InformationSchema);
-                        if (!compareResult.AreEqual)
+                        var data = provider.DataDefinition.GetBaselineData();
+                        if (data != baseline.Data)
                         {
                             console.WriteLine($": no match, cannot apply changes");
                             return false;

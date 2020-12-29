@@ -16,9 +16,8 @@ namespace yadd.cli.schema
         public void Dump(IConsole console, CancellationToken cancellationToken, ProviderOptions options)
         {
             var provider = factory.Get(options);
-            var schema = provider.DataDefinition.GetInformationSchema();
-            string jsonString = JsonSerializer.Serialize(schema);
-            console.WriteLine(jsonString);
+            string data = provider.DataDefinition.GetBaselineData();
+            console.WriteLine(data);
         }
     }
 }

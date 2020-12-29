@@ -2,6 +2,6 @@
 {
     public interface IDataDefinition
     {
-        InformationSchema GetInformationSchema();
+        string GetBaselineData();
     }
 }

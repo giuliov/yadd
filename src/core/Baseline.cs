@@ -15,15 +15,14 @@ namespace yadd.core
         public DeltaId DeltaId { get; set; }
         public DateTimeOffset Timestamp { get; private set; } = DateTimeOffset.Now;
         public ServerVersionInfo ServerInfo { get; set; }
-        public InformationSchema InformationSchema { get; set; }
+        public string Data { get; set; }
 
         private const string MetadataVersion = "0.1 meta";
 
         public (string data, string hash) GetCore()
         {
-            string jsonString = JsonSerializer.Serialize(InformationSchema);
-            string schema_hash = Hasher.GetHash(jsonString);
-            return (data: jsonString, hash: schema_hash);
+            string schema_hash = Hasher.GetHash(Data);
+            return (data: Data, hash: schema_hash);
         }
 
         public BaselineId SerializeTo(string baselinesDir)
@@ -62,7 +61,7 @@ namespace yadd.core
             string schema_hash = File.ReadAllText(Path.Combine(baselineDir, "schema_hash"));
             if (hash != schema_hash) ThrowInvalidBaseline();
 
-            b.InformationSchema = JsonSerializer.Deserialize<InformationSchema>(jsonString);
+            b.Data = jsonString;
             var meta = File.ReadAllLines(Path.Combine(baselineDir, "meta"));
             if (meta[0] != MetadataVersion) ThrowInvalidBaseline();
             b.Timestamp = DateTimeOffset.Parse(meta[1]);

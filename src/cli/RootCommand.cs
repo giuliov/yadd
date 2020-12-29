@@ -24,7 +24,7 @@ namespace yadd.cli
         private static Baseline TakeBaseline(IProvider provider)
         {
             var data = provider.DataDefinition.GetBaselineData();
-            var baseline = new Baseline { Data = data, ServerInfo = provider.GetServerVersion() };
+            var baseline = new Baseline { Data = data, ServerInfo = provider.GetServerVersion(), ProviderConfigurationData = provider.ProviderConfigurationData };
             return baseline;
         }
 

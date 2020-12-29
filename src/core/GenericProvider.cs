@@ -5,59 +5,13 @@ using System.Data;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Tomlyn;
 using Tomlyn.Model;
 
 namespace yadd.core
 {
-    public interface IGenericProviderQueries
+    public abstract class GenericProvider : IProvider, IDataDefinition, IScriptRunner
     {
-        IDbConnection NewConnection(string connectionString);
-        IDbCommand NewCommand(string query, IDbConnection connection);
-
-        string ProviderName { get; }
-        string VersionQuery { get; }
-        string FullVersionQuery { get; }
-        string InformationSchemataQuery { get; }
-        string InformationSchemaTablesQuery { get; }
-        string InformationSchemaColumnsQuery { get; }
-    }
-
-    public abstract class GenericProviderQueriesFromConfig : IGenericProviderQueries
-    {
-        public abstract string ProviderName { get; }
-        public abstract string VersionQuery { get; protected init; }
-        public abstract string FullVersionQuery { get; protected init; }
-        public abstract string InformationSchemataQuery { get; protected init; }
-        public abstract string InformationSchemaTablesQuery { get; protected init; }
-
-        public abstract string InformationSchemaColumnsQuery { get; protected init; }
-        public abstract IDbCommand NewCommand(string query, IDbConnection connection);
-        public abstract IDbConnection NewConnection(string connectionString);
-
-        public GenericProviderQueriesFromConfig(string configPath = "providers.toml")
-        {
-            string tomlString = File.ReadAllText(configPath);
-            var tomlDoc = Toml.Parse(tomlString, configPath);
-            if (tomlDoc.HasErrors) throw new Exception($"Invalid {configPath} TOML configuration: {tomlDoc.Diagnostics.First()}");
-            var tomlTables = tomlDoc.ToModel();
-            var table = tomlTables[ProviderName] as TomlTable;
-            if (table==null) throw new Exception($"Invalid {configPath} TOML configuration, missing [{ProviderName}]");
-            VersionQuery = (string)table["VersionQuery"];
-            FullVersionQuery = (string)table["FullVersionQuery"];
-            InformationSchemataQuery = (string)table["InformationSchemataQuery"];
-            InformationSchemaTablesQuery = (string)table["InformationSchemaTablesQuery"];
-            InformationSchemaColumnsQuery = (string)table["InformationSchemaColumnsQuery"];
-        }
-    }
-
-    public class GenericProvider<T> : IProvider, IDataDefinition, IScriptRunner
-        where T : IGenericProviderQueries
-    {
-        T self;
-        protected GenericProvider(T child) { self = child; }
-
         public string ConnectionString { get; init; }
 
         public IDataDefinition DataDefinition => this;
@@ -68,45 +22,91 @@ namespace yadd.core
 
         public ServerVersionInfo GetServerVersion()
         {
-            using var conn = self.NewConnection(ConnectionString);
+            using var conn = NewConnection(ConnectionString);
             conn.Open();
-            using var cmd = self.NewCommand(self.VersionQuery, conn);
+            using var cmd = NewCommand(VersionQuery, conn);
             string ver = (string)cmd.ExecuteScalar();
-            using var cmd_full = self.NewCommand(self.FullVersionQuery, conn);
+            using var cmd_full = NewCommand(FullVersionQuery, conn);
             string ver_full = (string)cmd_full.ExecuteScalar();
-            return new ServerVersionInfo { Provider = self.ProviderName, Version = ver, FullVersion = ver_full };
+            return new ServerVersionInfo { Provider = ProviderName, Version = ver, FullVersion = ver_full };
         }
 
         public string GetBaselineData()
         {
             var sb = new StringBuilder();
-            using var conn = self.NewConnection(ConnectionString);
+            using var conn = NewConnection(ConnectionString);
             conn.Open();
 
-            AddData(sb, self.InformationSchemataQuery, "InformationSchemata");
-            AddData(sb, self.InformationSchemaTablesQuery, "InformationSchemaTables");
-            AddData(sb, self.InformationSchemaColumnsQuery, "InformationSchemaColumns");
-
-            void AddData(StringBuilder sb, string query, string name)
+            foreach (var query in InformationSchemaQueries)
             {
-                using var cmd = self.NewCommand(query, conn);
-                using var reader = cmd.ExecuteReader();
-                sb.Append(name);
-                Serializer.WriteDataReader(sb, reader);
-                reader.Close();
+                AddData(sb, query);
             }
 
             return sb.ToString();
+
+            void AddData(StringBuilder sb, InformationSchemaQuery query)
+            {
+                using var cmd = NewCommand(query.SqlQuery, conn);
+                using var reader = cmd.ExecuteReader();
+                sb.Append(query.Name);
+                Serializer.WriteDataReader(sb, reader);
+                reader.Close();
+            }
         }
 
         public (int err, string msg) Run(string scriptCode)
         {
-            using var conn = self.NewConnection(ConnectionString);
+            using var conn = NewConnection(ConnectionString);
             conn.Open();
-            using var cmd = self.NewCommand(scriptCode, conn);
+            using var cmd = NewCommand(scriptCode, conn);
             cmd.ExecuteNonQuery();
 
             return (0, "OK");
         }
+
+        public abstract string ProviderName { get; }
+        protected abstract IDbCommand NewCommand(string query, IDbConnection connection);
+        protected abstract IDbConnection NewConnection(string connectionString);
+
+        protected string VersionQuery { get; init; }
+        protected string FullVersionQuery { get; init; }
+
+        public record InformationSchemaQuery
+        {
+            public string Name { get; init; }
+            public string SqlQuery { get; init; }
+        }
+        protected IList<InformationSchemaQuery> InformationSchemaQueries { get; init; }
+
+        public GenericProvider(string configPath = "providers.toml")
+        {
+            string tomlString = File.ReadAllText(configPath);
+            var tomlDoc = Toml.Parse(tomlString, configPath);
+            if (tomlDoc.HasErrors) throw new Exception($"Invalid {configPath} TOML configuration: {tomlDoc.Diagnostics.First()}");
+            var tomlTables = tomlDoc.ToModel();
+            var table = tomlTables[ProviderName] as TomlTable;
+            if (table == null) throw new Exception($"Invalid {configPath} TOML configuration, missing [{ProviderName}]");
+
+            VersionQuery = (string)table["VersionQuery"];
+            FullVersionQuery = (string)table["FullVersionQuery"];
+
+            var infoTable = table["infoschema"] as TomlTable;
+            if (infoTable == null) throw new Exception($"Invalid {configPath} TOML configuration, missing [{ProviderName}]");
+
+            var sb = new StringBuilder();
+
+            InformationSchemaQueries = new List<InformationSchemaQuery>();
+            foreach (var key in infoTable.Keys.OrderBy(k => k))
+            {
+                var isq = new InformationSchemaQuery { Name = key, SqlQuery = (string)infoTable[key] };
+                InformationSchemaQueries.Add(isq);
+                sb.Append(isq.SqlQuery);
+                sb.Append('\n');
+            }
+
+            ProviderConfigurationData = sb.ToString();
+        }
+
+        public virtual string ProviderConfigurationData { get; init; }
     }
 }

@@ -1,18 +1,20 @@
 [mssql]
 VersionQuery = "SELECT SERVERPROPERTY('productversion')"
 FullVersionQuery = "SELECT @@version"
-InformationSchemataQuery = """
+
+[mssql.infoschema]
+Schemata = """
    SELECT catalog_name,schema_name,schema_owner
    FROM information_schema.schemata
    WHERE schema_name NOT IN ('dbo' ,'guest' ,'INFORMATION_SCHEMA' ,'sys' ,'db_owner' ,'db_accessadmin' ,'db_securityadmin' ,'db_ddladmin' ,'db_backupoperator' ,'db_datareader' ,'db_datawriter' ,'db_denydatareader' ,'db_denydatawriter')
    ORDER BY 1,2
 """
-InformationSchemaTablesQuery = """
+Tables = """
    SELECT table_catalog,table_schema,table_name,table_type
    FROM information_schema.tables
    ORDER BY 1,2,3
 """
-InformationSchemaColumnsQuery = """
+TableColumns = """
    SELECT C.table_catalog,C.table_schema,C.table_name,C.column_name,C.ordinal_position,C.column_default,C.is_nullable,C.data_type,C.character_maximum_length
    FROM information_schema.columns AS C
    JOIN information_schema.tables AS T
@@ -26,19 +28,20 @@ InformationSchemaColumnsQuery = """
 VersionQuery = "SHOW server_version"
 FullVersionQuery = "SELECT version()"
 
-InformationSchemataQuery = """
+[postgresql.infoschema]
+Schemata = """
    SELECT catalog_name,schema_name,schema_owner
    FROM information_schema.schemata
    WHERE schema_name NOT IN ('pg_catalog','information_schema','pg_toast')
    ORDER BY 1,2
 """
-InformationSchemaTablesQuery = """
+Tables = """
    SELECT table_catalog,table_schema,table_name,table_type
    FROM information_schema.tables
    WHERE table_schema NOT IN ('pg_catalog','information_schema')
    ORDER BY 1,2,3
 """
-InformationSchemaColumnsQuery = """
+TableColumns = """
    SELECT C.table_catalog,C.table_schema,C.table_name,C.column_name,C.ordinal_position,C.column_default,C.is_nullable,C.data_type,C.character_maximum_length
    FROM information_schema.columns AS C
    JOIN information_schema.tables AS T

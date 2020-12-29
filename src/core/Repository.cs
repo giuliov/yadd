@@ -114,7 +114,7 @@ namespace yadd.core
         {
             var baseline = Baseline.DeserializeFrom(Path.Combine(BaselineDir, id.Filename));
 
-            if (!id.Equals (baseline.Id)) throw new Exception($"Invalid Baseline '{baseline.Id.Filename}'");
+            if (!id.Equals(baseline.Id)) throw new Exception($"Invalid Baseline '{baseline.Id.Filename}'");
 
             return baseline;
         }

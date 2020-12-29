@@ -7,6 +7,7 @@ namespace yadd.core
     {
         SemVersion ProviderVersion { get; }
         ServerVersionInfo GetServerVersion();
+        string ProviderConfigurationData { get; }
 
         IDataDefinition DataDefinition { get; }
         IScriptRunner ScriptRunner { get; }

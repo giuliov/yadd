@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
+using System.Diagnostics;
+using System.IO.Abstractions;
 
 namespace yadd.core
 {
@@ -16,6 +16,7 @@ namespace yadd.core
 
         public ObjectId(string hash)
         {
+            Debug.Assert(hash.Length == 128);
             Hash = hash;
         }
 
@@ -26,15 +27,15 @@ namespace yadd.core
             return this.Hash == ((ObjectId)obj).Hash;
         }
 
-        public void Write(string path)
+        public void Write(string path, IFileSystem FS)
         {
-            File.WriteAllText(path, Hash);
+            FS.File.WriteAllText(path, Hash);
         }
 
-        public static T Read<T>(string path) where T : ObjectId
+        public static T Read<T>(string path, IFileSystem FS) where T : ObjectId
         {
-            return File.Exists(path)
-                ? (T)Activator.CreateInstance(typeof(T), File.ReadAllText(path))
+            return FS.File.Exists(path)
+                ? (T)Activator.CreateInstance(typeof(T), FS.File.ReadAllText(path))
                 : null;
         }
     }

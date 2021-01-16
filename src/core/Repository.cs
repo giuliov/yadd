@@ -1,9 +1,7 @@
 ﻿using OneOf;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text.Json;
+using System.IO.Abstractions;
 
 namespace yadd.core
 {
@@ -12,56 +10,54 @@ namespace yadd.core
     public class Repository
     {
         const string RootName = ".yadd";
-        const string InfoName = "info";
-        static readonly Version RepoFormat = new Version(0, 1);
 
-        public string Root { get; init; }
-        private string BaselineDir { get; init; }
-        private string DeltaDir { get; init; }
-        private string StagingDir { get; init; }
+        private IFileSystem FS { get; init; }
+        private References References { get; init; }
+        private BaselineRepo BaselineRepo { get; init; }
+        private DeltaRepo DeltaRepo { get; init; }
 
-        protected string CurrentBaselinePath => Path.Combine(Root, "current_baseline");
-        protected string StagingIndexPath => Path.Combine(StagingDir, "index");
-
-        public static Repository Init(Baseline baseline)
+        public static Repository Init(Baseline baseline, IProvider provider) { return Init(baseline, provider, new FileSystem()); }
+        public static Repository Init(Baseline baseline, IProvider provider, IFileSystem fileSystem)
         {
-            if (Directory.Exists(RootName))
+            if (fileSystem.Directory.Exists(RootName))
                 throw new Exception("Repository already initialized");
 
-            var repoDir = Directory.CreateDirectory(RootName);
-            File.WriteAllText(Path.Combine(repoDir.FullName, InfoName), $"{RepoFormat} yadd");
-            var repo = new Repository {
-                Root = repoDir.FullName,
+            var repoDir = fileSystem.Directory.CreateDirectory(RootName);
+            var info = new YaddRepoInfo(repoDir.FullName, fileSystem);
+            info.Write(provider.GetServerVersion());
+            var repo = new Repository
+            {
+                FS = fileSystem,
                 // create initial structure
-                BaselineDir = repoDir.CreateSubdirectory("baseline").FullName,
-                DeltaDir = repoDir.CreateSubdirectory("delta").FullName,
-                StagingDir = repoDir.CreateSubdirectory("staging").FullName
+                References = new References(repoDir, fileSystem),
+                BaselineRepo = new BaselineRepo(repoDir, fileSystem),
+                DeltaRepo = new DeltaRepo(repoDir, fileSystem),
             };
-            var rootId = repo.AddBaseline(baseline);
-            rootId.Write(Path.Combine(repoDir.FullName, "root_baseline"));
+            // HACK
+            repo.BaselineRepo.AddRootBaseline(baseline, repo.References);
             return repo;
         }
 
-        public static Repository FindUpward()
+        public static Repository FindUpward() { return FindUpward(new FileSystem()); }
+        public static Repository FindUpward(IFileSystem fileSystem)
         {
-            string current = Directory.GetCurrentDirectory();
-            while (current != null && !Directory.Exists(Path.Combine(current, RootName)))
+            string current = fileSystem.Directory.GetCurrentDirectory();
+            while (current != null && !fileSystem.Directory.Exists(fileSystem.Path.Combine(current, RootName)))
             {
-                current = Directory.GetParent(current).FullName;
+                current = fileSystem.Directory.GetParent(current)?.FullName;
             }
             if (current == null) ThrowInvalidRepo();
-            string[] info = File.ReadAllLines(Path.Combine(current, RootName, InfoName));
-            if (info.Length < 1) ThrowInvalidRepo();
-            string[] headLine = info[0].Split(' ');
-            if (!Version.TryParse(headLine[0], out Version v)) ThrowInvalidRepo();
-            if (v!=RepoFormat) ThrowInvalidRepo();
-            string rootDir = Path.Combine(current, RootName);
+            string rootDir = fileSystem.Path.Combine(current, RootName);
+
+            var info = new YaddRepoInfo(rootDir, fileSystem);
+            if (!info.Read()) ThrowInvalidRepo();
+
             return new Repository
             {
-                Root = rootDir,
-                BaselineDir = Path.Combine(rootDir,"baseline"),
-                DeltaDir = Path.Combine(rootDir, "delta"),
-                StagingDir = Path.Combine(rootDir, "staging")
+                FS = fileSystem,
+                References = new References(rootDir, fileSystem),
+                BaselineRepo = new BaselineRepo(rootDir, fileSystem),
+                DeltaRepo = new DeltaRepo(rootDir, fileSystem),
             };
 
             static void ThrowInvalidRepo()
@@ -70,221 +66,141 @@ namespace yadd.core
             }
         }
 
-        private BaselineId GetCurrentBaselineId()
+        public Baseline GetMatchingBaseline(BaselineRef bref)
         {
-            return ObjectId.Read<BaselineId>(CurrentBaselinePath);
-        }
-
-        private BaselineId GetRootBaselineId()
-        {
-            return ObjectId.Read<BaselineId>(Path.Combine(Root, "root_baseline"));
-        }
-
-        private BaselineId AddBaseline(Baseline baseline, DeltaId deltaId = null)
-        {
-            baseline.ParentId = GetCurrentBaselineId();
-            baseline.DeltaId = deltaId;
-
-            var id = baseline.SerializeTo(BaselineDir);
-
-            id.Write(CurrentBaselinePath);
-
-            return id;
-        }
-
-        public Baseline GetMatchingBaseline(string idMatch)
-        {
-            var matches = Directory.GetDirectories(BaselineDir, idMatch + "*");
-            if (matches.Length != 1) throw new Exception($"Cannot find Baseline '{idMatch}'");
-            string id = Path.GetFileName(matches[0]);
-            return GetBaseline(new BaselineId(id));
+            var id = References.Resolve(bref);
+            return BaselineRepo.GetBaseline(id);
         }
 
         public Baseline GetRootBaseline()
         {
-            return GetBaseline(GetRootBaselineId());
+            return BaselineRepo.GetBaseline(References.GetRootBaselineId());
         }
 
         public Baseline GetCurrentBaseline()
         {
-            return GetBaseline(GetCurrentBaselineId());
-        }
-
-        public Baseline GetBaseline(BaselineId id)
-        {
-            var baseline = Baseline.DeserializeFrom(Path.Combine(BaselineDir, id.Filename));
-
-            if (!id.Equals(baseline.Id)) throw new Exception($"Invalid Baseline '{baseline.Id.Filename}'");
-
-            return baseline;
+            return BaselineRepo.GetBaseline(References.GetCurrentBaselineId());
         }
 
         public (bool found, BaselineId id) FindMatch(Baseline baseline)
         {
-            var core = baseline.GetCore();
-
-            foreach (var dir in Directory.EnumerateDirectories(BaselineDir))
-            {
-                string schema_hash = File.ReadAllText(Path.Combine(dir, "schema_hash"));
-                if (schema_hash == core.hash)
-                {
-                    string meta = File.ReadAllText(Path.Combine(dir, "meta"));
-                    var id = new BaselineId(Hasher.GetHash(meta));
-                    return (found: true, id: id);
-                }
-            }
-
-            return (found: false, null);
+            return BaselineRepo.FindMatch(baseline);
         }
 
         public void Stage(string filename)
         {
-            string hash = Hasher.GetHash(File.ReadAllBytes(filename));
-            File.Copy(filename, Path.Combine(StagingDir, hash));
-            File.AppendAllLines(StagingIndexPath, new string[] { $"{hash} {Path.GetFileName(filename)}" });
+            DeltaRepo.StageFile(filename);
         }
 
         public void Unstage(string filename)
         {
-            string hash = Hasher.GetHash(File.ReadAllBytes(filename));
-            File.Delete(Path.Combine(StagingDir, hash));
-            // remove from index
-            File.WriteAllLines(StagingIndexPath,
-                File.ReadAllLines(StagingIndexPath)
-                   .Where(line => !line.StartsWith(hash)));
+            DeltaRepo.UnstageFile(filename);
         }
 
         public IEnumerable<string> GetStaged()
         {
-            return (File.Exists(StagingIndexPath))
-                ? File.ReadAllLines(StagingIndexPath).Select(rec => rec.Split(' ')[1])
-                : Array.Empty<string>();
+            return DeltaRepo.GetStagedFiles();
         }
 
         public IEnumerable<DeltaScript> GetStagedScripts()
         {
-            return GetDeltaScripts(StagingIndexPath);
-        }
-
-        private IEnumerable<DeltaScript> GetDeltaScripts(string indexPath)
-        {
-            string baseDir = Directory.GetParent(indexPath).FullName;
-            foreach (var rec in File.ReadAllLines(indexPath))
-            {
-                string[] parts = rec.Split(' ');
-                yield return new DeltaScript
-                {
-                    Name = parts[1],
-                    Code = File.ReadAllText(Path.Combine(baseDir, parts[0]))
-                };
-            }
+            return DeltaRepo.GetStagedScripts();
         }
 
         public (BaselineId parent, BaselineId @new) Commit(string message, Baseline newBaseline)
         {
-            var delta = new Delta
-            {
-                CommitMessage = message,
-                ParentBaselineId = GetCurrentBaselineId(),
-                Scripts = GetStagedScripts().ToArray()
-            };
-            string jsonString = JsonSerializer.Serialize(delta);
-            delta.Id = new DeltaId(Hasher.GetHash(jsonString));
+            var parent = GetCurrentBaseline();
 
-            // delta directory
-            string deltaDir = Path.Combine(DeltaDir, delta.Id.Filename);
-            Directory.CreateDirectory(deltaDir);
+            // sanity check
+            if (parent.Data == newBaseline.Data) throw new Exception("No schema changes: aborting commit");
 
-            // serialize the object to disk
-            delta.ParentBaselineId.Write(Path.Combine(deltaDir, "parent_baseline"));
-            File.WriteAllText(Path.Combine(deltaDir, "commit_message"), delta.CommitMessage);
-            foreach (var script in delta.Scripts)
-            {
-                var scriptId = new DeltaScriptId( Hasher.GetHash(script.Code));
-                File.WriteAllText(Path.Combine(deltaDir, scriptId.Filename), script.Code);
-                File.AppendAllLines(Path.Combine(deltaDir, "index"), new string[] { $"{scriptId.Filename} {script.Name} {scriptId.Hash}" });
-            }
+            var delta = DeltaRepo.AddDelta(message, parent.Id);
 
-            foreach (var staged in Directory.EnumerateFiles(StagingDir))
-            {
-                File.Delete(staged);
-            }
+            DeltaRepo.ClearStagingArea();
 
-            var newBaselineId = AddBaseline(newBaseline, delta.Id);
+            var newBaselineId = BaselineRepo.AddBaseline(newBaseline, delta.Id, parent.Id);
 
-            return (parent: delta.ParentBaselineId, @new: newBaselineId);
+            References.SetCurrent(newBaselineId);
+
+            return (parent: parent.Id, @new: newBaselineId);
         }
 
-        public IEnumerable<HistoryItem> GetHistoryBetween(Baseline initialBaseline, Baseline finalBaseline)
+        public IEnumerable<HistoryItem> GetLogBetween(Baseline initialBaseline, Baseline finalBaseline)
         {
-            var history = new Stack<HistoryItem>();
+            var log = new Stack<HistoryItem>();
 
             // move backward through history
             var currentId = finalBaseline.Id;
             while (!currentId.Equals(initialBaseline.Id))
             {
-                var currentBaseline = GetBaseline(currentId);
-                history.Push(currentBaseline);
+                var currentBaseline = BaselineRepo.GetBaseline(currentId);
+                log.Push(currentBaseline);
 
-                string baselineDir = Path.Combine(BaselineDir, currentId.Filename);
-                string deltaIdPath = Path.Combine(baselineDir, "delta");
-                if (!File.Exists(deltaIdPath))
+                var deltaId = BaselineRepo.GetDelta(currentId);
+                if (deltaId==null)
                     break;
-                var deltaId = ObjectId.Read<DeltaId>(deltaIdPath);
-                string deltaDir = Path.Combine(DeltaDir, deltaId.Filename);
 
-                var delta = new Delta
-                {
-                    CommitMessage = File.ReadAllText(Path.Combine(deltaDir, "commit_message")),
-                    ParentBaselineId = ObjectId.Read<BaselineId>(Path.Combine(deltaDir, "parent_baseline")),
-                    Scripts = GetDeltaScripts(Path.Combine(deltaDir, "index")).ToArray()
-                };
-                // check delta hash!
-                string jsonString = JsonSerializer.Serialize(delta);
-                delta.Id = new DeltaId(Hasher.GetHash(jsonString));
-                if (!deltaId.Equals(delta.Id)) throw new Exception($"Delta {deltaId} content is tampered");
+                var delta = DeltaRepo.GetDelta(deltaId);
 
-                history.Push(delta);
+                log.Push(delta);
 
                 currentId = delta.ParentBaselineId;
             }
 
-            history.Push(initialBaseline);
+            log.Push(initialBaseline);
 
-            return history;
+            return log;
         }
 
         public IEnumerable<HistoryItem> GetFullHistory()
         {
             // move backward through history
-            var currentId = GetCurrentBaselineId();
+            var currentId = References.GetCurrentBaselineId();
             while (currentId != null)
             {
-                var currentBaseline = GetBaseline(currentId);
+                var currentBaseline = BaselineRepo.GetBaseline(currentId);
                 yield return currentBaseline;
 
-                string baselineDir = Path.Combine(BaselineDir, currentId.Filename);
-                string deltaIdPath = Path.Combine(baselineDir, "delta");
-                if (!File.Exists(deltaIdPath))
+                var deltaId = BaselineRepo.GetDelta(currentId);
+                if (deltaId == null)
                     break;
-                var deltaId = ObjectId.Read<DeltaId>(deltaIdPath);
-                string deltaDir = Path.Combine(DeltaDir, deltaId.Filename);
 
-                var delta = new Delta
-                {
-                    CommitMessage = File.ReadAllText(Path.Combine(deltaDir, "commit_message")),
-                    ParentBaselineId = ObjectId.Read<BaselineId>(Path.Combine(deltaDir, "parent_baseline")),
-                    Scripts = GetDeltaScripts(Path.Combine(deltaDir, "index")).ToArray()
-                };
-                // check delta hash!
-                string jsonString = JsonSerializer.Serialize(delta);
-                delta.Id = new DeltaId(Hasher.GetHash(jsonString));
-                if (!deltaId.Equals(delta.Id)) throw new Exception($"Delta {deltaId} content is tampered");
+                var delta = DeltaRepo.GetDelta(deltaId);
 
                 yield return delta;
 
                 currentId = delta.ParentBaselineId;
             }
+        }
+
+        public void SwitchTo(BaselineRef newBranch)
+        {
+            References.SwitchToBranch(newBranch);
+        }
+
+        public void RemoveBranch(BaselineRef branch)
+        {
+            References.DeleteBranch(branch);
+        }
+
+        public IEnumerable<(BaselineRef name, bool current)> GetAllBranches()
+        {
+            return References.GetAllBranches();
+        }
+
+        public IEnumerable<(BaselineRef tag, BaselineId id)> GetAllTags()
+        {
+            return References.GetAllTags();
+        }
+
+        public void AddTag(BaselineRef tag, BaselineRef target)
+        {
+            References.AddTag(tag, References.Resolve(target));
+        }
+
+        public void RemoveTag(BaselineRef tag)
+        {
+            References.RemoveTag(tag);
         }
     }
 }

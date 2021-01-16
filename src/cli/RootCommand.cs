@@ -33,7 +33,7 @@ namespace yadd.cli
         {
             var provider = factory.Get(options);
             var baseline = TakeBaseline(provider);
-            var repo = Repository.Init(baseline);
+            var repo = Repository.Init(baseline, provider);
         }
 
         [Command(Description = "Adds a script to staging area")]
@@ -132,15 +132,15 @@ namespace yadd.cli
 
         [Command(Description = "Migrate database")]
         public void Upgrade(IConsole console, CancellationToken cancellationToken, ProviderOptions options,
-            [Option] string fromBaseline,
-            [Option] string toBaseline)
+            [Option] BaselineRef fromBaseline,
+            [Option] BaselineRef toBaseline)
         {
             var repo = Repository.FindUpward();
 
             var provider = factory.Get(options);
 
             Baseline initialBaseline;
-            if (string.IsNullOrEmpty(fromBaseline))
+            if (fromBaseline.IsNull)
             {
                 initialBaseline = repo.GetRootBaseline();
                 console.WriteLine($"From: Using root baseline {initialBaseline.Id.Displayname}");
@@ -151,7 +151,7 @@ namespace yadd.cli
                 console.WriteLine($"From: Found {initialBaseline.Id.Displayname} baseline");
             }
             Baseline finalBaseline;
-            if (string.IsNullOrEmpty(toBaseline))
+            if (toBaseline.IsNull)
             {
                 finalBaseline = repo.GetCurrentBaseline();
                 console.WriteLine($"To: Using current baseline {finalBaseline.Id.Displayname}");
@@ -162,7 +162,7 @@ namespace yadd.cli
                 console.WriteLine($"To: Found {finalBaseline.Id.Displayname} baseline");
             }
 
-            foreach (var item in repo.GetHistoryBetween(initialBaseline, finalBaseline))
+            foreach (var item in repo.GetLogBetween(initialBaseline, finalBaseline))
             {
                 bool ok = item.Match(
                     baseline =>
@@ -198,6 +198,13 @@ namespace yadd.cli
         }
 
         [SubCommand]
-        public schema.Schema Schema { get; set; }
+        public subcommands.Schema Schema { get; set; }
+
+        [SubCommand]
+        public subcommands.Branch Branch { get; set; }
+
+
+        [SubCommand]
+        public subcommands.Tag Tag { get; set; }
     }
 }

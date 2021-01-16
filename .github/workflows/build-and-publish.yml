@@ -1,0 +1,117 @@
+name: build-and-publish
+
+on:
+  push:
+    paths:
+    - '.github/workflows/build-and-publish.yml'
+    - 'src/**'
+  pull_request:
+    paths:
+    - '.github/workflows/build-and-publish.yml'
+    - 'src/**'
+
+env:
+  THIS_PUBLISH_TO_GITHUB: true
+  DOTNETSDK_VERSION: '5.0.101'
+  CONFIGURATION: Release
+  THIS_NBGV_PROJECT: './src'
+  THIS_SOLUTION: 'src/yadd.sln'
+  THIS_TEST_PROJECT: 'src/test/core.unit.tests/core.unit.tests.csproj'
+  THIS_CLI_PROJECT: 'src/cli/cli.csproj'
+
+jobs:
+
+  build:
+
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    outputs:
+      version: '${{ steps.version_tool_get.outputs.version }}'
+      githubrelease_upload_url: '${{ steps.create_release.outputs.upload_url }}'
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '${{ env.DOTNETSDK_VERSION }}'
+    - name: 'Install dotnet tools'
+      run: dotnet tool restore
+    - name: 'NuGet Restore'
+      run: 'dotnet restore $env:THIS_SOLUTION'
+    - name: 'Which version'
+      id: version_tool_get
+      run: |
+        $nbgvver = $(dotnet tool run nbgv get-version --project $env:THIS_NBGV_PROJECT --variable AssemblyInformationalVersion)
+        echo "::set-output name=version::${nbgvver}"
+    - name: 'Build solution'
+      run: 'dotnet build --configuration $env:CONFIGURATION $env:THIS_SOLUTION'
+    - name: 'Unit tests with Code Coverage'
+      run: 'dotnet test --collect:"XPlat Code Coverage" --results-directory test-results/ --logger "trx;LogFileName=unittests-core.trx" --no-build --no-restore --configuration $env:CONFIGURATION $env:THIS_TEST_PROJECT -- DataCollectionRunSettings.DataCollectors.DataCollector.Configuration.Format=opencover'
+    - name: 'Report on Code Coverage'
+      run: 'dotnet reportgenerator "-reports:test-results/*/*.xml" "-targetdir:coverage-report/" "-reporttypes:Html" "-assemblyfilters:-*Tests*.*"'
+    - name: Upload Code Coverage Reports
+      uses: actions/upload-artifact@v2
+      with:
+        name: coverage_report
+        path: coverage-report/**
+    - name: Create Release
+      if: env.THIS_PUBLISH_TO_GITHUB == 'true'
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: '${{ steps.version_tool_get.outputs.version }}'
+        release_name: 'v${{ steps.version_tool_get.outputs.version }}'
+        body: |
+          Release
+        draft: true
+        prerelease: true
+
+  package:
+
+    runs-on: ubuntu-latest
+    needs: build
+    strategy:
+      matrix:
+        runtime: [ 'win-x64','linux-x64','osx-x64' ]
+    env:
+      RUNTIME: ${{ matrix.runtime }}
+      ARTIFACT_NAME: 'yadd-${{ needs.build.outputs.version }}-${{ matrix.runtime }}'
+    steps:
+    - uses: actions/checkout@v1
+    - uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: '${{ env.DOTNETSDK_VERSION }}'
+    - name: 'Install dotnet tools'
+      run: dotnet tool restore
+    - name: 'Package'
+      run: |
+        mkdir -p artifacts/
+        mkdir -p publish_output/
+        dotnet publish --configuration $CONFIGURATION --runtime $RUNTIME --self-contained true --output $GITHUB_WORKSPACE/publish_output/ $THIS_CLI_PROJECT
+        pushd publish_output
+        7z a -bd -r $GITHUB_WORKSPACE/artifacts/$ARTIFACT_NAME.zip
+        popd
+        shasum -a 256 $GITHUB_WORKSPACE/artifacts/$ARTIFACT_NAME.zip > $GITHUB_WORKSPACE/artifacts/$ARTIFACT_NAME-sha256.txt
+    - name: 'Upload package to release'
+      if: env.THIS_PUBLISH_TO_GITHUB == 'true'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.build.outputs.githubrelease_upload_url }}
+        asset_path: artifacts/${{ env.ARTIFACT_NAME }}.zip
+        asset_name: ${{ env.ARTIFACT_NAME }}.zip
+        asset_content_type: application/zip
+    - name: 'Upload package to release'
+      if: env.THIS_PUBLISH_TO_GITHUB == 'true'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ needs.build.outputs.githubrelease_upload_url }}
+        asset_path: artifacts/${{ env.ARTIFACT_NAME }}-sha256.txt
+        asset_name: ${{ env.ARTIFACT_NAME }}-sha256.txt
+        asset_content_type: text/plain

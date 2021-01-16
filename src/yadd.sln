@@ -21,6 +21,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "doc", "doc", "{CF9CD1F2-D94
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{7986E9E9-FD65-4AC1-9C00-CE6257F4FD6D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "core.unit.tests", "test\core.unit.tests\core.unit.tests.csproj", "{384B3C0E-D13F-4F6A-8BE0-CF1174D8570E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipeline", "pipeline", "{548EF210-0C39-4A91-B328-B85468466BB7}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\build-and-publish.yml = ..\.github\workflows\build-and-publish.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,6 +52,10 @@ Global
 		{29F71F9D-4CA6-40EE-B17F-544BC496CE1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29F71F9D-4CA6-40EE-B17F-544BC496CE1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29F71F9D-4CA6-40EE-B17F-544BC496CE1D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{384B3C0E-D13F-4F6A-8BE0-CF1174D8570E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{384B3C0E-D13F-4F6A-8BE0-CF1174D8570E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{384B3C0E-D13F-4F6A-8BE0-CF1174D8570E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{384B3C0E-D13F-4F6A-8BE0-CF1174D8570E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -50,6 +63,7 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{1B1576A7-9536-4424-AC98-65095C7CD4ED} = {743B5B97-2FFF-4522-8AED-E13511BFBBCA}
 		{29F71F9D-4CA6-40EE-B17F-544BC496CE1D} = {743B5B97-2FFF-4522-8AED-E13511BFBBCA}
+		{384B3C0E-D13F-4F6A-8BE0-CF1174D8570E} = {7986E9E9-FD65-4AC1-9C00-CE6257F4FD6D}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8DFD1780-B423-4F34-AEB8-9873C820F06F}

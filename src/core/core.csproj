@@ -10,6 +10,7 @@
     <PackageReference Include="CommandDotNet" Version="4.1.4" />
     <PackageReference Include="OneOf" Version="3.0.163" />
     <PackageReference Include="semver" Version="2.0.6" />
+    <PackageReference Include="System.IO.Abstractions" Version="13.2.8" />
     <PackageReference Include="Tomlyn" Version="0.1.2" />
   </ItemGroup>
 

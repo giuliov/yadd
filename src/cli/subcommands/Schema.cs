@@ -1,11 +1,9 @@
 ﻿using CommandDotNet;
 using CommandDotNet.Rendering;
-using System.Text.Json;
 using System.Threading;
 using yadd.core;
-using yadd.postgresql_provider;
 
-namespace yadd.cli.schema
+namespace yadd.cli.subcommands
 {
     [Command(Description = "Manages Database Schema.")]
     public class Schema

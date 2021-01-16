@@ -1,6 +1,5 @@
 ﻿using System;
-using System.IO;
-using System.Text.Json;
+using System.IO.Abstractions;
 using System.Text.Json.Serialization;
 using Tomlyn;
 using Tomlyn.Model;
@@ -16,7 +15,7 @@ namespace yadd.core
         public BaselineId ParentId { get; set; }
         [JsonIgnore]
         public DeltaId DeltaId { get; set; }
-        public DateTimeOffset Timestamp { get; private set; } = DateTimeOffset.Now;
+        public DateTimeOffset Timestamp { get; internal set; } = DateTimeOffset.Now;
         public ServerVersionInfo ServerInfo { get; set; }
         public string ProviderConfigurationData { get; set; }
         public string Data { get; set; }
@@ -29,15 +28,15 @@ namespace yadd.core
             return (data: Data, hash: schema_hash);
         }
 
-        public BaselineId SerializeTo(string baselinesDir)
+        public BaselineId SerializeTo(string baselinesDir, IFileSystem FS)
         {
-            string baselineDir = Path.Combine(baselinesDir, "tmp");
-            Directory.CreateDirectory(baselineDir);
+            string baselineDir = FS.Path.Combine(baselinesDir, "tmp");
+            FS.Directory.CreateDirectory(baselineDir);
 
             var core = GetCore();
-            File.WriteAllText(Path.Combine(baselineDir, "schema_data"), core.data);
-            File.WriteAllText(Path.Combine(baselineDir, "schema_hash"), core.hash);
-            File.WriteAllText(Path.Combine(baselineDir, "provider_configuration"), ProviderConfigurationData);
+            FS.File.WriteAllText(FS.Path.Combine(baselineDir, "schema_data"), core.data);
+            FS.File.WriteAllText(FS.Path.Combine(baselineDir, "schema_hash"), core.hash);
+            FS.File.WriteAllText(FS.Path.Combine(baselineDir, "provider_configuration"), ProviderConfigurationData);
             string provider_configuration_hash = Hasher.GetHash(ProviderConfigurationData);
 
             var tomlDoc = new DocumentSyntax()
@@ -58,38 +57,45 @@ namespace yadd.core
                                 {"timestamp", Timestamp.ToString("O") },
                                 {"schema_hash", core.hash },
                                 {"provider_configuration_hash", provider_configuration_hash },
-                                {"serverinfo.provider", ServerInfo.Provider },
-                                {"serverinfo.version", ServerInfo.Version },
-                                {"serverinfo.fullversion", ServerInfo.FullVersion }
                             }
-                        }
+                        },
+                        new TableSyntax(new KeySyntax("baseline", "serverinfo"))
+                        {
+                            Items =
+                            {
+                                {"provider", ServerInfo.Provider },
+                                {"version", ServerInfo.Version },
+                                {"fullversion", ServerInfo.FullVersion }
+                            }
+                        },
                     }
             };
 
-            File.WriteAllText(Path.Combine(baselineDir, "meta"), tomlDoc.ToString());
-            string meta = File.ReadAllText(Path.Combine(baselineDir, "meta"));
+            FS.File.WriteAllText(FS.Path.Combine(baselineDir, "meta"), tomlDoc.ToString());
+            string meta = FS.File.ReadAllText(FS.Path.Combine(baselineDir, "meta"));
             var id = new BaselineId(Hasher.GetHash(meta));
+            FS.File.WriteAllText(FS.Path.Combine(baselineDir, "id"), id.Hash);
 
-            if (ParentId != null) ParentId.Write(Path.Combine(baselineDir, "parent_baseline"));
-            if (DeltaId != null) DeltaId.Write(Path.Combine(baselineDir, "delta"));
+            if (ParentId != null) ParentId.Write(FS.Path.Combine(baselineDir, "parent_baseline"), FS);
+            if (DeltaId != null) DeltaId.Write(FS.Path.Combine(baselineDir, "delta"), FS);
 
-            Directory.Move(baselineDir, Path.Combine(baselinesDir, id.Filename));
+            FS.Directory.Move(baselineDir, FS.Path.Combine(baselinesDir, id.Filename));
 
             return id;
         }
 
-        public static Baseline DeserializeFrom(string baselineDir)
+        public static Baseline DeserializeFrom(string baselineDir, IFileSystem FS)
         {
             var b = new Baseline();
 
-            string jsonString = File.ReadAllText(Path.Combine(baselineDir, "schema_data"));
+            string jsonString = FS.File.ReadAllText(FS.Path.Combine(baselineDir, "schema_data"));
             string hash = Hasher.GetHash(jsonString);
-            string schema_hash = File.ReadAllText(Path.Combine(baselineDir, "schema_hash"));
+            string schema_hash = FS.File.ReadAllText(FS.Path.Combine(baselineDir, "schema_hash"));
             if (hash != schema_hash) ThrowInvalidBaseline();
 
             b.Data = jsonString;
-            string metaPath = Path.Combine(baselineDir, "meta");
-            var metaDoc = Toml.Parse(File.ReadAllText(metaPath), metaPath);
+            string metaPath = FS.Path.Combine(baselineDir, "meta");
+            var metaDoc = Toml.Parse(FS.File.ReadAllText(metaPath), metaPath);
             if (metaDoc.HasErrors) ThrowInvalidBaseline();
 
             var metaToml = metaDoc.ToModel();
@@ -101,27 +107,27 @@ namespace yadd.core
             b.Timestamp = DateTimeOffset.Parse((string)baselineTable["timestamp"]);
             string meta_schema_hash = (string)baselineTable["schema_hash"];
             if (meta_schema_hash != schema_hash) ThrowInvalidBaseline();
-            //var serverInfoTable = (TomlTable)baselineTable["serverinfo"];
+            var serverInfoTable = (TomlTable)baselineTable["serverinfo"];
             b.ServerInfo = new ServerVersionInfo
             {
-                Provider = (string)baselineTable["serverinfo.provider"],
-                Version = (string)baselineTable["serverinfo.version"],
-                FullVersion = (string)baselineTable["serverinfo.fullversion"]
+                Provider = (string)serverInfoTable["provider"],
+                Version = (string)serverInfoTable["version"],
+                FullVersion = (string)serverInfoTable["fullversion"]
             };
-            b.ProviderConfigurationData = File.ReadAllText(Path.Combine(baselineDir, "provider_configuration"));
+            b.ProviderConfigurationData = FS.File.ReadAllText(FS.Path.Combine(baselineDir, "provider_configuration"));
             string provider_configuration_hash = Hasher.GetHash(b.ProviderConfigurationData);
             string meta_provider_configuration_hash = (string)baselineTable["provider_configuration_hash"];
             if (meta_provider_configuration_hash != provider_configuration_hash) ThrowInvalidBaseline();
 
-            if (File.Exists(Path.Combine(baselineDir, "parent_baseline")))
+            if (FS.File.Exists(FS.Path.Combine(baselineDir, "parent_baseline")))
             {
-                b.ParentId = ObjectId.Read<BaselineId>(Path.Combine(baselineDir, "parent_baseline"));
+                b.ParentId = ObjectId.Read<BaselineId>(FS.Path.Combine(baselineDir, "parent_baseline"), FS);
             }
-            if (File.Exists(Path.Combine(baselineDir, "delta")))
+            if (FS.File.Exists(FS.Path.Combine(baselineDir, "delta")))
             {
-                b.DeltaId = ObjectId.Read<DeltaId>(Path.Combine(baselineDir, "delta"));
+                b.DeltaId = ObjectId.Read<DeltaId>(FS.Path.Combine(baselineDir, "delta"), FS);
             }
-            string metastring = File.ReadAllText(metaPath);
+            string metastring = FS.File.ReadAllText(metaPath);
             b.Id = new BaselineId(Hasher.GetHash(metastring));
 
             return b;

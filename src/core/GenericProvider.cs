@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using Tomlyn;
@@ -78,9 +78,10 @@ namespace yadd.core
         }
         protected IList<InformationSchemaQuery> InformationSchemaQueries { get; init; }
 
-        public GenericProvider(string configPath = "providers.toml")
+        public GenericProvider(string configPath = "providers.toml") : this(new FileSystem(), configPath) { }
+        public GenericProvider(IFileSystem FS, string configPath)
         {
-            string tomlString = File.ReadAllText(configPath);
+            string tomlString = FS.File.ReadAllText(configPath);
             var tomlDoc = Toml.Parse(tomlString, configPath);
             if (tomlDoc.HasErrors) throw new Exception($"Invalid {configPath} TOML configuration: {tomlDoc.Diagnostics.First()}");
             var tomlTables = tomlDoc.ToModel();

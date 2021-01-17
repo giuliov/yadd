@@ -18,7 +18,7 @@ namespace core.unit.tests
                 { $"{TestRootDir}\\providers.toml", new MockFileData(MockDbProvider.ProvidersToml) }
             };
             var fs = new MockFileSystem(fsContent, TestRootDir);
-            var provider = new MockDbProvider(fs, "providers.toml");
+            var provider = MockDbProvider.Make(fs, "providers.toml");
             var baseline = new Baseline
             {
                 ProviderConfigurationData = provider.ProviderConfigurationData,
@@ -40,7 +40,7 @@ namespace core.unit.tests
             };
             var fs = new MockFileSystem(fsContent, TestRootDir);
             fs.AddDirectory($"{TestRootDir}\\.yadd");
-            var provider = new MockDbProvider(fs, "providers.toml");
+            var provider = MockDbProvider.Make(fs, "providers.toml");
             var baseline = new Baseline();
 
             fs.Invoking(x =>
@@ -109,7 +109,7 @@ namespace core.unit.tests
                 { $"{TestRootDir}\\providers.toml", new MockFileData(MockDbProvider.ProvidersToml) }
             };
             var fs = new MockFileSystem(fsContent, TestRootDir);
-            var provider = new MockDbProvider(fs, "providers.toml");
+            var provider = MockDbProvider.Make(fs, "providers.toml");
             var rootBaseline = new Baseline
             {
                 ProviderConfigurationData = provider.ProviderConfigurationData,
@@ -242,7 +242,7 @@ namespace core.unit.tests
                 { $"{TestRootDir}\\providers.toml", new MockFileData(MockDbProvider.ProvidersToml) }
             };
             var fs = new MockFileSystem(fsContent, TestRootDir);
-            var provider = new MockDbProvider(fs, "providers.toml");
+            var provider = MockDbProvider.Make(fs, "providers.toml");
             var rootBaseline = new Baseline
             {
                 ProviderConfigurationData = provider.ProviderConfigurationData,
@@ -275,7 +275,7 @@ namespace core.unit.tests
                 { $"{TestRootDir}\\providers.toml", new MockFileData(MockDbProvider.ProvidersToml) }
             };
             var fs = new MockFileSystem(fsContent, TestRootDir);
-            var provider = new MockDbProvider(fs, "providers.toml");
+            var provider = MockDbProvider.Make(fs, "providers.toml");
             var rootBaseline = new Baseline
             {
                 ProviderConfigurationData = provider.ProviderConfigurationData,
@@ -322,7 +322,7 @@ namespace core.unit.tests
                 { $"{TestRootDir}\\providers.toml", new MockFileData(MockDbProvider.ProvidersToml) }
             };
             var fs = new MockFileSystem(fsContent, TestRootDir);
-            var provider = new MockDbProvider(fs, "providers.toml");
+            var provider = MockDbProvider.Make(fs, "providers.toml");
             var rootBaseline = new Baseline
             {
                 ProviderConfigurationData = provider.ProviderConfigurationData,

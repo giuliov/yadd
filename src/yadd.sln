@@ -30,6 +30,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipeline", "pipeline", "{54
 		..\.github\workflows\build-and-publish.yml = ..\.github\workflows\build-and-publish.yml
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "mysql-provider", "providers\mysql\mysql-provider.csproj", "{B5837C48-9106-4AC4-BE06-C2ACEF3A1660}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -56,6 +58,10 @@ Global
 		{384B3C0E-D13F-4F6A-8BE0-CF1174D8570E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{384B3C0E-D13F-4F6A-8BE0-CF1174D8570E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{384B3C0E-D13F-4F6A-8BE0-CF1174D8570E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B5837C48-9106-4AC4-BE06-C2ACEF3A1660}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B5837C48-9106-4AC4-BE06-C2ACEF3A1660}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B5837C48-9106-4AC4-BE06-C2ACEF3A1660}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B5837C48-9106-4AC4-BE06-C2ACEF3A1660}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +70,7 @@ Global
 		{1B1576A7-9536-4424-AC98-65095C7CD4ED} = {743B5B97-2FFF-4522-8AED-E13511BFBBCA}
 		{29F71F9D-4CA6-40EE-B17F-544BC496CE1D} = {743B5B97-2FFF-4522-8AED-E13511BFBBCA}
 		{384B3C0E-D13F-4F6A-8BE0-CF1174D8570E} = {7986E9E9-FD65-4AC1-9C00-CE6257F4FD6D}
+		{B5837C48-9106-4AC4-BE06-C2ACEF3A1660} = {743B5B97-2FFF-4522-8AED-E13511BFBBCA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8DFD1780-B423-4F34-AEB8-9873C820F06F}

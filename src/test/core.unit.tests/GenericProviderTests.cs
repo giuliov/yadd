@@ -13,8 +13,8 @@ namespace core.unit.tests
             var fsContent = new Dictionary<string, MockFileData> { };
             var fs = new MockFileSystem(fsContent, TestRootDir);
 
-            fs.Invoking(x => new MockDbProvider(fs, "providers.toml"))
-                .Should().Throw<System.IO.FileNotFoundException>();
+            fs.Invoking(x => MockDbProvider.Make(fs, "providers.toml"))
+                .Should().Throw<System.Exception>();
         }
 
         [Fact]
@@ -25,7 +25,7 @@ namespace core.unit.tests
             };
             var fs = new MockFileSystem(fsContent, TestRootDir);
 
-            var provider = new MockDbProvider(fs, "providers.toml");
+            var provider = MockDbProvider.Make(fs, "providers.toml");
 
             provider.ProviderName.Should().Be("mssql");
         }
@@ -37,7 +37,7 @@ namespace core.unit.tests
                 { $"{TestRootDir}\\providers.toml", new MockFileData(MockDbProvider.ProvidersToml) }
             };
             var fs = new MockFileSystem(fsContent, TestRootDir);
-            var provider = new MockDbProvider(fs, "providers.toml");
+            var provider = MockDbProvider.Make(fs, "providers.toml");
 
             var result = provider.ProviderVersion;
 
@@ -51,7 +51,7 @@ namespace core.unit.tests
                 { $"{TestRootDir}\\providers.toml", new MockFileData(MockDbProvider.ProvidersToml) }
             };
             var fs = new MockFileSystem(fsContent, TestRootDir);
-            var provider = new MockDbProvider(fs, "providers.toml");
+            var provider = MockDbProvider.Make(fs, "providers.toml");
 
             var result = provider.GetServerVersion();
             
@@ -65,7 +65,7 @@ namespace core.unit.tests
                 { $"{TestRootDir}\\providers.toml", new MockFileData(MockDbProvider.ProvidersToml) }
             };
             var fs = new MockFileSystem(fsContent, TestRootDir);
-            var provider = new MockDbProvider(fs, "providers.toml");
+            var provider = MockDbProvider.Make(fs, "providers.toml");
 
             var result = provider.ProviderConfigurationData;
 
@@ -79,7 +79,7 @@ namespace core.unit.tests
                 { $"{TestRootDir}\\providers.toml", new MockFileData(MockDbProvider.ProvidersToml) }
             };
             var fs = new MockFileSystem(fsContent, TestRootDir);
-            var provider = new MockDbProvider(fs, "providers.toml");
+            var provider = MockDbProvider.Make(fs, "providers.toml");
 
             var result = provider.GetBaselineData();
 
@@ -93,7 +93,7 @@ namespace core.unit.tests
                 { $"{TestRootDir}\\providers.toml", new MockFileData(MockDbProvider.ProvidersToml) }
             };
             var fs = new MockFileSystem(fsContent, TestRootDir);
-            var provider = new MockDbProvider(fs, "providers.toml");
+            var provider = MockDbProvider.Make(fs, "providers.toml");
 
             var result = provider.Run("dummy");
 

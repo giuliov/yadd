@@ -1,9 +1,5 @@
 ﻿using Npgsql;
-using Semver;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
 using yadd.core;
 
 namespace yadd.postgresql_provider
@@ -11,6 +7,8 @@ namespace yadd.postgresql_provider
     public class PostgreSQLProvider : GenericProvider
     {
         public override string ProviderName => "postgresql";
+
+        public PostgreSQLProvider(string configData, string configPath) : base(configData, configPath) { }
 
         protected override IDbCommand NewCommand(string query, IDbConnection connection)
         {

@@ -1,9 +1,5 @@
-﻿using Semver;
-using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System.Data;
 using System.Data.SqlClient;
-using System.Linq;
 using yadd.core;
 
 namespace yadd.mssql_provider
@@ -11,6 +7,8 @@ namespace yadd.mssql_provider
     public class SQLServerProvider : GenericProvider
     {
         public override string ProviderName => "mssql";
+
+        public SQLServerProvider(string configData, string configPath) : base(configData, configPath) { }
 
         protected override IDbCommand NewCommand(string query, IDbConnection connection)
         {

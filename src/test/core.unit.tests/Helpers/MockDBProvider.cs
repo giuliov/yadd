@@ -12,9 +12,17 @@ namespace core.unit.tests
 {
     internal class MockDbProvider : GenericProvider
     {
-        private MockDbProvider() { }//forbids
-        internal MockDbProvider(IFileSystem FS, string configPath)
-            : base(FS, configPath) { }
+        private MockDbProvider() : base(null,null) { }//forbids
+
+        internal static MockDbProvider Make(IFileSystem FS, string configPath)
+        {
+            var reader = new DefaultProviderDataReader(FS, configPath);
+            return new MockDbProvider(
+                reader.Read(), reader.ConfigurationPath);
+        }
+
+        private MockDbProvider(string configData, string configPath)
+            : base(configData, configPath) { }
 
         public static string ProvidersToml =>
 @"

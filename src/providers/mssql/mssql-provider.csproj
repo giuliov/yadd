@@ -9,11 +9,12 @@
   <ItemGroup>
     <None Include="..\providers.toml" Link="providers.toml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </None>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.*" />
   </ItemGroup>
 
   <ItemGroup>

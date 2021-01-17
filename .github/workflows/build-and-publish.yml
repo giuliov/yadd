@@ -11,7 +11,7 @@ on:
     - 'src/**'
 
 env:
-  THIS_PUBLISH_TO_GITHUB: true
+  THIS_GO_PUBLIC: ${{ ( github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release') ) && github.event_name == 'push' }}
   DOTNETSDK_VERSION: '5.0.101'
   CONFIGURATION: Release
   THIS_NBGV_PROJECT: './src'
@@ -55,8 +55,18 @@ jobs:
       with:
         name: coverage_report
         path: coverage-report/**
+    - name: Create NuGet package
+      if: env.THIS_GO_PUBLIC == 'true'
+      run: 'dotnet pack --configuration $env:CONFIGURATION $env:THIS_CLI_PROJECT'
+    - name: Publish dotnet tool to NuGet
+      if: env.THIS_GO_PUBLIC == 'true'
+      run: |
+        $package = Get-Item ./nupkg/*.nupkg
+        dotnet nuget push $package.FullName --api-key $env:NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+      env:
+        NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
     - name: Create Release
-      if: env.THIS_PUBLISH_TO_GITHUB == 'true'
+      if: env.THIS_GO_PUBLIC == 'true'
       id: create_release
       uses: actions/create-release@v1
       env:
@@ -96,7 +106,7 @@ jobs:
         popd
         shasum -a 256 $GITHUB_WORKSPACE/artifacts/$ARTIFACT_NAME.zip > $GITHUB_WORKSPACE/artifacts/$ARTIFACT_NAME-sha256.txt
     - name: 'Upload package to release'
-      if: env.THIS_PUBLISH_TO_GITHUB == 'true'
+      if: env.THIS_GO_PUBLIC == 'true'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -106,7 +116,7 @@ jobs:
         asset_name: ${{ env.ARTIFACT_NAME }}.zip
         asset_content_type: application/zip
     - name: 'Upload package to release'
-      if: env.THIS_PUBLISH_TO_GITHUB == 'true'
+      if: env.THIS_GO_PUBLIC == 'true'
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

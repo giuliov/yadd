@@ -1,7 +1,12 @@
 # yadd
-Yet another DB deployer
+
+![logo](art/logo.svg)  _Yet another DB deployer_
 
 An exercise on validating DB deployment, inspired by Git design.
+
+Supports Microsoft SQL Server, PostgreSQL and MySQL.
+
+> Do not use on production environments: this is alpha software written to validate the idea and collect feedback.
 
 ## Design
 
@@ -90,22 +95,38 @@ yadd info
  
 yadd init
 yadd history
-yadd add .\sample-scripts\Create.sql
-yadd add .\sample-scripts\Alter.sql
+yadd add ./sample-scripts/Create.sql
+yadd add ./sample-scripts/Alter.sql
 yadd show-stage
 yadd commit "phase 1"
 yadd history
-yadd add .\sample-scripts\Alter-Next.sql
+yadd add ./sample-scripts/Alter-Next.sql
 yadd show-stage
 yadd commit "phase 2"
 yadd history
+```
 
-# DROP TABLE pippo;
+You can explore the content of the `.yadd` directory: it is the repository of database states and changes.
+
+Now that you defined how to progress from an initial stage to new schema, try to apply the changes to a different database using the same repository.
+
+```Powershell
+$env:YADD_CONNECTIONSTRING = "Host=someotherhost;Username=giuli;Database=myshareddb"
 
 yadd upgrade
 ```
 
+If the target database does not match the initial schema the command will stop and no changes are applied.
+
+
+The repository is provider specific: you cannot reply a SQL Server history on a MySQL database and vice-versa.
+
+You can see this by comparing the two content of the two yadd directories.
+
 ```Powershell
+
+mv .yadd .yadd_psql
+
 $env:YADD_PROVIDERNAME = "mssql"
 $env:YADD_CONNECTIONSTRING = "Data Source=(localdb)\ProjectsV13;Initial Catalog=yadd-test;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"
 
@@ -113,17 +134,20 @@ yadd info
  
 yadd init
 yadd history
-yadd add .\sample-scripts\Create.sql
-yadd add .\sample-scripts\Alter.sql
+yadd add ./sample-scripts/Create.sql
+yadd add ./sample-scripts/Alter.sql
 yadd show-stage
 yadd commit "phase 1"
 yadd history
-yadd add '.\sample-scripts\Alter-Next(MSSQL).sql'
+yadd add './sample-scripts/Alter-Next(MSSQL).sql'
 yadd show-stage
 yadd commit "phase 2"
 yadd history
-
-# DROP TABLE pippo;
-
-yadd upgrade
 ```
+
+The SHA hashes looks different because the tool collects different, provider specific, information.
+
+## Schema information
+
+The schema data collected is not hardcoded, it is listed in the `providers.toml` file.
+You can edit the content and compare the different results.
